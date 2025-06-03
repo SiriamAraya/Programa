@@ -1,22 +1,33 @@
+/* Global */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Body */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f5f7fa;
-  padding: 30px 20px;
-  max-width: 720px;
+  padding: 1.875rem 1.25rem;
+  max-width: 45rem;
   margin: 0 auto;
   color: #333;
 }
-/* Título principal */
+
+/* Título */
 h2 {
   text-align: center;
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
   font-weight: 700;
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 
-/* Tabla */
+/* Tabla scrollable */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -26,220 +37,67 @@ table {
   overflow: hidden;
 }
 
-thead tr {
-  background-color: #2980b9;
-  color: white;
-  text-transform: uppercase;
-  font-size: 14px;
-  letter-spacing: 1px;
-}
-
-th, td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #e1e4e8;
-  vertical-align: middle;
-  font-size: 15px;
-}
-
-tbody tr:hover {
-  background-color: #ecf0f1;
-}
-
-ul {
-  padding-left: 18px;
-  margin: 6px 0;
-  color: #555;
-  font-size: 14px;
-  list-style-type: disc;
-}
+/* ... resto de tu CSS para tabla ... */
 
 /* Botones */
-button {
+button, .menu a {
   background-color: #27ae60;
   color: white;
   border: none;
-  padding: 10px 18px;
-  border-radius: 5px;
-  font-size: 14px;
+  padding: 0.625rem 1.125rem;
+  border-radius: 0.3125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
   box-shadow: 0 2px 5px rgb(39 174 96 / 0.4);
+  min-height: 44px;
+  line-height: 1.2;
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
+button:hover, .menu a:hover {
   background-color: #219150;
   box-shadow: 0 4px 12px rgb(33 145 80 / 0.6);
 }
 
-.modal {
-  display: none; /* oculto por defecto */
-  position: fixed;
-  z-index: 1000;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  justify-content: center;
-  align-items: center;
-  padding: 15px;
-  display: flex; /* solo se activa cuando haces display:flex en JS */
-}
-
-.modal-content {
-  background: white;
-  border-radius: 10px;
-  max-width: 380px;
-  width: 100%;
-  padding: 25px 30px 30px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  position: relative;
-  animation: modalFadeIn 0.3s ease forwards;
-}
-
-.close {
-  position: absolute;
-  top: 14px;
-  right: 18px;
-  font-size: 26px;
-  font-weight: 700;
-  color: #888;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-.close:hover {
-  color: #e74c3c;
-}
-
-
-/* Animación modal */
-@keyframes modalFadeIn {
-  from {opacity: 0; transform: translateY(-20px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-
-/* Formulario dentro del modal */
-.modal-content h3 {
-  margin-bottom: 20px;
-  font-weight: 700;
-  color: #34495e;
-  text-align: center;
-  font-size: 22px;
-}
-
-.modal-content label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #555;
-  font-size: 14px;
-}
-
-.modal-content input[type="number"],
-.modal-content select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1.8px solid #ccc;
-  font-size: 15px;
-  transition: border-color 0.3s ease;
-  outline: none;
-  margin-bottom: 15px;
-}
-
-.modal-content input[type="number"]:focus,
-.modal-content select:focus {
-  border-color: #2980b9;
-  box-shadow: 0 0 6px #2980b9aa;
-}
-
-/* Botón dentro del modal */
-.modal-content button {
-  width: 100%;
-  padding: 12px 0;
-  font-weight: 700;
-  font-size: 16px;
-  background-color: #2980b9;
-  box-shadow: 0 2px 8px rgb(41 128 185 / 0.6);
-  margin-top: 10px;
-  border-radius: 8px;
-}
-
-.modal-content button:hover {
-  background-color: #1f6391;
-  box-shadow: 0 4px 12px rgb(31 99 145 / 0.8);
-}
-
-/* Resultado pago */
-#resultadoPago {
-  margin-top: 15px;
-  font-weight: 600;
-  font-size: 16px;
-  text-align: center;
-  color: #27ae60;
-}
-
-#resultadoPago p {
-  margin: 6px 0;
-}
-
-/* Mensajes de error */
-#errorPago {
-  color: #e74c3c;
-  font-weight: 700;
-  margin-top: 10px;
-  text-align: center;
-}
-
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   body {
-    padding: 20px 10px;
+    padding: 1rem;
+    max-width: 100%;
   }
 
-  .modal-content {
-    padding: 20px 15px 25px;
+  h2 {
+    font-size: 1.5rem;
   }
 
   table, th, td {
-    font-size: 13px;
+    font-size: 0.875rem;
   }
 
-  button {
-    font-size: 13px;
-    padding: 8px 12px;
+  button, .menu a {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
   }
 }
 
-.menu a {
-  display: inline-block;
-  background-color: #27ae60;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;  /* tamaño pequeño */
-  padding: 8px 14px; /* padding compacto */
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(39, 174, 96, 0.4);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  text-align: center;
-}
-
-.menu a:hover {
-  background-color: #219150;
-  box-shadow: 0 4px 10px rgba(33, 145, 80, 0.7);
-}
-
-/* Para móvil, que se apilen verticalmente */
 @media (max-width: 480px) {
+  body {
+    padding: 1rem 0.625rem;
+  }
+
+  table, th, td {
+    font-size: 0.8rem;
+  }
+
   .menu {
     flex-direction: column;
     max-width: 300px;
-    margin: 0 auto 30px auto;
+    margin: 0 auto 2rem auto;
   }
 
   .menu a {
-    font-size: 16px;
-    padding: 10px 16px;
+    font-size: 1.125rem;
+    padding: 0.75rem 1rem;
   }
 }
