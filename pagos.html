@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/estilos.css" />
+  <title>Pedidos y Pagos</title>
+</head>
+<body>
+  <nav class="menu">
+    <a href="index2.html">Inicio</a>
+    <a href="agregar.html">Agregar Pedido</a>
+    <a href="pedidos.html">Agregar al Pedido</a>
+    <a href="pagos.html">Registrar Pago</a>
+    <a href="cierre.html">Hacer Cierre</a>
+  </nav>
+  <h2>Realizar Pago</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Productos</th>
+        <th>Total</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="listaPedidos"></tbody>
+  </table>
+
+  <!-- Modal para pagar -->
+  <div id="modalPago" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" id="cerrarModal" style="cursor:pointer;">&times;</span>
+      <h3>Registrar Pago</h3>
+      <label>Total a pagar (colones):</label>
+      <input type="number" id="totalPago" readonly />
+
+      <label>Monto recibido:</label>
+      <input type="number" id="montoRecibido" placeholder="Ingrese el pago" />
+
+      <label>Tipo de pago:</label>
+      <select id="tipoPago">
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+      </select>
+
+      <button id="btnProcesarPago">Procesar Pago</button>
+      <div id="resultadoPago"></div>
+    </div>
+  </div>
+
+<script>
+  let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+  const tbody = document.getElementById("listaPedidos");
+
+  let clienteActual = null;
+  let totalActual = 0;
+
+  function agruparYMostrarPedidos() {
+    tbody.innerHTML = "";
+
+    const pedidosPorCliente = pedidos.reduce((acc, item) => {
+      if (!acc[item.cliente]) acc[item.cliente] = [];
+      acc[item.cliente].push(item);
+      return acc;
+    }, {});
+
+    if (Object.keys(pedidosPorCliente).length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4">No hay pedidos registrados.</td></tr>';
+      return;
+    }
+
+    for (const cliente in pedidosPorCliente) {
+      const items = pedidosPorCliente[cliente];
+      let productosHTML = "<ul>";
+      let total = 0;
+
+      items.forEach(i => {
+        i.productos.forEach(prod => {
+          const subtotal = prod.cantidad * prod.precio;
+          productosHTML += `<li>${prod.cantidad} x ${prod.nombre} = ₡${subtotal.toFixed(2)}</li>`;
+          total += subtotal;
+        });
+      });
+
+      productosHTML += "</ul>";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${cliente}</td>
+        <td>${productosHTML}</td>
+        <td>₡${total.toFixed(2)}</td>
+        <td><button class="btnPagar" data-cliente="${cliente}" data-total="${total}">Pagar</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  agruparYMostrarPedidos();
+
+  const modal = document.getElementById("modalPago");
+  const cerrarModalBtn = document.getElementById("cerrarModal");
+  const totalPagoInput = document.getElementById("totalPago");
+  const montoRecibidoInput = document.getElementById("montoRecibido");
+  const tipoPagoSelect = document.getElementById("tipoPago");
+  const resultadoPagoDiv = document.getElementById("resultadoPago");
+  const btnProcesarPago = document.getElementById("btnProcesarPago");
+
+  // Delegación para botones Pagar
+  tbody.addEventListener("click", (e) => {
+    if (e.target.classList.contains("btnPagar")) {
+      const cliente = e.target.getAttribute("data-cliente");
+      const total = parseFloat(e.target.getAttribute("data-total"));
+      abrirModalPago(total, cliente);
+    }
+  });
+
+  function abrirModalPago(total, cliente) {
+    clienteActual = cliente;
+    totalActual = total;
+    totalPagoInput.value = total.toFixed(2);
+    montoRecibidoInput.value = "";
+    resultadoPagoDiv.innerHTML = "";
+    tipoPagoSelect.value = "Efectivo";
+    montoRecibidoInput.disabled = false;
+    modal.style.display = "block";
+  }
+
+  cerrarModalBtn.onclick = () => {
+    modal.style.display = "none";
+  };
+
+  window.onclick = (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+
+  tipoPagoSelect.addEventListener("change", () => {
+    if (tipoPagoSelect.value === "Tarjeta") {
+      montoRecibidoInput.value = "";
+      montoRecibidoInput.disabled = true;
+    } else {
+      montoRecibidoInput.disabled = false;
+    }
+    resultadoPagoDiv.innerHTML = "";
+  });
+
+  btnProcesarPago.addEventListener("click", () => {
+    const tipo = tipoPagoSelect.value;
+
+    if (tipo === "Efectivo") {
+      const recibido = parseFloat(montoRecibidoInput.value);
+      if (isNaN(recibido) || recibido < totalActual) {
+        resultadoPagoDiv.innerHTML = "<p style='color:red'>Monto insuficiente para pago en efectivo.</p>";
+        return;
+      }
+      const vuelto = recibido - totalActual;
+      resultadoPagoDiv.innerHTML = `
+        <p>Pago registrado con ${tipo}.</p>
+        <p>Vuelto: ₡${vuelto.toFixed(2)}</p>
+      `;
+    } else {
+      resultadoPagoDiv.innerHTML = `<p>Pago registrado con Tarjeta.</p>`;
+    }
+
+    // Quitar pedidos pagados
+    const pedidosPagados = pedidos.filter(p => p.cliente === clienteActual);
+    pedidos = pedidos.filter(p => p.cliente !== clienteActual);
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+
+    // Agregar ventas del día
+    let ventasDelDia = JSON.parse(localStorage.getItem("ventasDelDia")) || [];
+    ventasDelDia = ventasDelDia.concat(pedidosPagados);
+    localStorage.setItem("ventasDelDia", JSON.stringify(ventasDelDia));
+
+    agruparYMostrarPedidos();
+
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 3000);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="css/estilos.css">
+  <title>Agregar Pedido</title>
+</head>
+<body>
+
+  <nav class="menu">
+    <a href="index2.html">Inicio</a>
+    <a href="agregar.html">Agregar Pedido</a>
+    <a href="pedidos.html">Agregar al Pedido</a>
+    <a href="pagos.html">Registrar Pago</a>
+    <a href="cierre.html">Hacer Cierre</a>
+  </nav>
+
+  <div id="menu-pedido" class="menu activo">
+    <h3>Agregar Pedido</h3>
+    <input type="text" id="cliente" placeholder="Nombre del cliente" />
+    <select id="producto">
+      <option value="5">Hamburguesa - $5</option>
+      <option value="3">Refresco - $3</option>
+      <option value="4">Papas - $4</option>
+      <option value="7">Pizza - $7</option>
+    </select>
+    <input type="number" id="cantidad" min="1" value="1" />
+    <button onclick="agregarPedidoTemp()">Agregar al pedido</button>
+    <button onclick="confirmarPedido()">Confirmar Pedido</button>
+    <div id="pedidoTemp"></div>
+  </div>
+
+  <script>
+    let pedido = [];
+
+    // Si viene pedido para editar, cargarlo
+    window.onload = function() {
+      const pedidoEditar = localStorage.getItem("pedidoEditar");
+      if (pedidoEditar) {
+        const pedidoObj = JSON.parse(pedidoEditar);
+        if (pedidoObj && pedidoObj.productos) {
+          document.getElementById("cliente").value = pedidoObj.cliente;
+          document.getElementById("cliente").disabled = true;
+          pedido = pedidoObj.productos.map(p => {
+            return {
+              cliente: pedidoObj.cliente,
+              producto: `${p.nombre} - $${p.precio}`,
+              cantidad: p.cantidad,
+              subtotal: p.precio * p.cantidad
+            };
+          });
+          mostrarPedidoTemp();
+        }
+        localStorage.removeItem("pedidoEditar");
+      }
+    }
+
+    function agregarPedidoTemp() {
+      const cliente = document.getElementById("cliente").value.trim();
+      const productoSelect = document.getElementById("producto");
+      const cantidad = parseInt(document.getElementById("cantidad").value);
+      const nombreProducto = productoSelect.options[productoSelect.selectedIndex].text;
+      const precio = parseFloat(productoSelect.value);
+      const subtotal = precio * cantidad;
+
+      if (cliente === "" || isNaN(cantidad) || cantidad <= 0) {
+        alert("Por favor, ingrese un nombre de cliente válido y una cantidad.");
+        return;
+      }
+
+      pedido.push({ cliente, producto: nombreProducto, cantidad, subtotal });
+
+      mostrarPedidoTemp();
+    }
+
+    function mostrarPedidoTemp() {
+      const div = document.getElementById("pedidoTemp");
+      div.innerHTML = "<h4>Pedido Temporal:</h4>";
+      let total = 0;
+      pedido.forEach((item) => {
+        div.innerHTML += `<p>${item.cantidad} x ${item.producto} = $${item.subtotal.toFixed(2)}</p>`;
+        total += item.subtotal;
+      });
+      div.innerHTML += `<strong>Total: $${total.toFixed(2)}</strong>`;
+    }
+
+    function confirmarPedido() {
+      if (pedido.length === 0) {
+        alert("No hay productos en el pedido.");
+        return;
+      }
+
+      const clienteActual = pedido[0].cliente;
+
+      const productos = pedido.map(item => {
+        const nombre = item.producto.split(" - $")[0];
+        const precio = parseFloat(item.producto.split(" - $")[1]);
+        return {
+          nombre,
+          cantidad: item.cantidad,
+          precio
+        };
+      });
+
+      const subtotal = productos.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+
+      let pedidosGuardados = JSON.parse(localStorage.getItem("pedidos")) || [];
+      pedidosGuardados = pedidosGuardados.filter(p => p.cliente !== clienteActual);
+
+      pedidosGuardados.push({
+        cliente: clienteActual,
+        productos: productos,
+        subtotal: subtotal,
+        fechaPago: null
+      });
+
+      localStorage.setItem("pedidos", JSON.stringify(pedidosGuardados));
+
+      alert("Pedido confirmado. Gracias!");
+
+      // Reiniciar formulario
+      pedido.length = 0;
+      document.getElementById("pedidoTemp").innerHTML = "";
+      document.getElementById("cliente").value = "";
+      document.getElementById("cliente").disabled = false;
+      document.getElementById("cantidad").value = 1;
+    }
+  </script>
+</body>
+</html>

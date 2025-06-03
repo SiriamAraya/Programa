@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/estilos.css">
+  <title>Cierre Diario</title>
+</head>
+<body>
+  <nav class="menu">
+    <a href="index2.html">Inicio</a>
+    <a href="agregar.html">Agregar Pedido</a>
+    <a href="pedidos.html">Agregar al Pedido</a>
+    <a href="pagos.html">Registrar Pago</a>
+    <a href="cierre.html">Hacer Cierre</a>
+  </nav>
+  <h2>Cierre Diario de Ventas</h2>
+  <button id="btnCerrarDia">Hacer cierre</button>
+
+  <div class="cierres-list">
+    <h3>Cierres anteriores:</h3>
+    <div id="listaCierres">
+      <!-- Lista de cierres con botones ver detalle -->
+    </div>
+  </div>
+
+  <!-- Modal para mostrar detalle de cierre -->
+  <div class="modal-bg" id="modalDetalle" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalFecha">Detalle del cierre</h3>
+        <button class="close-btn" id="cerrarModal">&times;</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="detalleTabla"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="text-align:right; font-weight:bold;">Total:</td>
+            <td id="totalModal" style="font-weight:bold;">₡0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const btnCerrarDia = document.getElementById("btnCerrarDia");
+  const listaCierres = document.getElementById("listaCierres");
+  const modalBg = document.getElementById("modalDetalle");
+  const cerrarModalBtn = document.getElementById("cerrarModal");
+  const detalleTabla = document.getElementById("detalleTabla");
+  const modalFecha = document.getElementById("modalFecha");
+  const totalModal = document.getElementById("totalModal");
+
+  // Cargar cierres almacenados
+  function cargarCierres() {
+    const cierres = JSON.parse(localStorage.getItem("cierresDiarios")) || [];
+    listaCierres.innerHTML = "";
+
+    if (cierres.length === 0) {
+      listaCierres.innerHTML = "<p>No hay cierres anteriores.</p>";
+      return;
+    }
+
+    cierres.forEach((cierre, index) => {
+      const div = document.createElement("div");
+      div.classList.add("cierre-item");
+
+      // Formatear fecha para mostrar solo fecha y hora
+      const fechaStr = new Date(cierre.fecha).toLocaleString();
+
+      div.innerHTML = `
+        <span>${fechaStr}</span>
+        <button data-index="${index}">Ver detalle</button>
+      `;
+
+      // Evento para mostrar detalle
+      div.querySelector("button").addEventListener("click", () => {
+        mostrarDetalle(cierre);
+      });
+
+      listaCierres.appendChild(div);
+    });
+  }
+
+  // Mostrar modal con detalle de un cierre
+  function mostrarDetalle(cierre) {
+    modalFecha.textContent = `Detalle del cierre - ${new Date(cierre.fecha).toLocaleString()}`;
+
+    detalleTabla.innerHTML = "";
+    let total = 0;
+
+    cierre.ventas.forEach(venta => {
+      venta.productos.forEach(producto => {
+        const subtotalProd = producto.cantidad * producto.precio;
+        total += subtotalProd;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${venta.cliente}</td>
+          <td>${producto.nombre}</td>
+          <td>${producto.cantidad}</td>
+          <td>₡${producto.precio.toFixed(2)}</td>
+          <td>₡${subtotalProd.toFixed(2)}</td>
+        `;
+        detalleTabla.appendChild(tr);
+      });
+    });
+
+    totalModal.textContent = `₡${total.toFixed(2)}`;
+
+    modalBg.style.display = "flex";
+  }
+
+  // Cerrar modal al hacer click en botón cerrar
+  cerrarModalBtn.addEventListener("click", () => {
+    modalBg.style.display = "none";
+  });
+
+  // Cerrar modal al hacer click fuera del contenido modal
+  window.addEventListener("click", (event) => {
+    if (event.target === modalBg) {
+      modalBg.style.display = "none";
+    }
+  });
+
+  // Función para hacer cierre
+  btnCerrarDia.addEventListener("click", () => {
+    const ventasDelDia = JSON.parse(localStorage.getItem("ventasDelDia")) || [];
+
+    if (ventasDelDia.length === 0) {
+      alert("No hay ventas para cerrar el día.");
+      return;
+    }
+
+    const cierres = JSON.parse(localStorage.getItem("cierresDiarios")) || [];
+
+    const nuevoCierre = {
+      fecha: new Date().toISOString(),
+      ventas: ventasDelDia
+    };
+
+    cierres.push(nuevoCierre);
+    localStorage.setItem("cierresDiarios", JSON.stringify(cierres));
+
+    localStorage.removeItem("ventasDelDia");
+
+    alert("Cierre del día realizado correctamente.");
+
+    cargarCierres();
+  });
+
+  // Al cargar la página
+  cargarCierres();
+
+</script>
+
+</body>
+</html>
