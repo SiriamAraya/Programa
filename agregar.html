@@ -1,130 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="css/estilos.css">
+  <meta charset="UTF-8">
   <title>Agregar Pedido</title>
+  <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-
   <nav class="menu">
-    <a href="index.html">Inicio</a>
-    <a href="agregar.html">Agregar Pedido</a>
-    <a href="pedidos.html">Agregar al Pedido</a>
-    <a href="pagos.html">Registrar Pago</a>
-    <a href="cierre.html">Hacer Cierre</a>
-  </nav>
+  <a href="index.html">Inicio</a>
+  <a href="agregar.html">Agregar Pedido</a>
+  <a href="pedidos.html">Agregar al Pedido</a>
+  <a href="pagos.html">Registrar Pago</a>
+  <a href="cierre.html">Hacer Cierre</a>
+</nav>
+  <h3>Agregar Pedido</h3>
+<input type="text" id="clienteInput" placeholder="Nombre del cliente" />
+<select id="productoSelect">
+  <option value="Hamburguesa" data-precio="5">Hamburguesa - $5</option>
+  <option value="Papas" data-precio="4">Papas - $4</option>
+  <option value="Refresco" data-precio="2">Refresco - $2</option>
+</select>
+<input type="number" id="cantidadInput" min="1" value="1" />
 
-  <div id="menu-pedido" class="menu activo">
-    <h3>Agregar Pedido</h3>
-    <input type="text" id="cliente" placeholder="Nombre del cliente" />
-    <select id="producto">
-      <option value="5">Hamburguesa - $5</option>
-      <option value="3">Refresco - $3</option>
-      <option value="4">Papas - $4</option>
-      <option value="7">Pizza - $7</option>
-    </select>
-    <input type="number" id="cantidad" min="1" value="1" />
-    <button onclick="agregarPedidoTemp()">Agregar al pedido</button>
-    <button onclick="confirmarPedido()">Confirmar Pedido</button>
-    <div id="pedidoTemp"></div>
-  </div>
+  <button onclick="agregarProducto()">Agregar al Pedido</button>
+
+  <h2>Resumen del Pedido</h2>
+  <ul id="resumenLista"></ul>
+  <p>Total: $<span id="totalSpan">0</span></p>
+
+  <button onclick="guardarPedido()">Guardar Pedido</button>
 
   <script>
-    let pedido = [];
+    let productosPedido = [];
+    let clienteEditando = null;
 
-    // Si viene pedido para editar, cargarlo
-    window.onload = function() {
-      const pedidoEditar = localStorage.getItem("pedidoEditar");
-      if (pedidoEditar) {
-        const pedidoObj = JSON.parse(pedidoEditar);
-        if (pedidoObj && pedidoObj.productos) {
-          document.getElementById("cliente").value = pedidoObj.cliente;
-          document.getElementById("cliente").disabled = true;
-          pedido = pedidoObj.productos.map(p => {
-            return {
-              cliente: pedidoObj.cliente,
-              producto: `${p.nombre} - $${p.precio}`,
-              cantidad: p.cantidad,
-              subtotal: p.precio * p.cantidad
-            };
-          });
-          mostrarPedidoTemp();
-        }
-        localStorage.removeItem("pedidoEditar");
-      }
+    // Cargar pedido si venimos de pedidos.html
+    const pedidoEditar = JSON.parse(localStorage.getItem("pedidoEditar"));
+    if (pedidoEditar) {
+      clienteEditando = pedidoEditar.cliente;
+      document.getElementById("clienteInput").value = clienteEditando;
+      productosPedido = pedidoEditar.productos;
+      localStorage.removeItem("pedidoEditar");
+      actualizarResumen();
     }
 
-    function agregarPedidoTemp() {
-      const cliente = document.getElementById("cliente").value.trim();
-      const productoSelect = document.getElementById("producto");
-      const cantidad = parseInt(document.getElementById("cantidad").value);
-      const nombreProducto = productoSelect.options[productoSelect.selectedIndex].text;
-      const precio = parseFloat(productoSelect.value);
-      const subtotal = precio * cantidad;
+    function agregarProducto() {
+      const productoSelect = document.getElementById("productoSelect");
+      const nombre = productoSelect.value;
+      const precio = parseFloat(productoSelect.options[productoSelect.selectedIndex].dataset.precio);
+      const cantidad = parseInt(document.getElementById("cantidadInput").value);
 
-      if (cliente === "" || isNaN(cantidad) || cantidad <= 0) {
-        alert("Por favor, ingrese un nombre de cliente válido y una cantidad.");
+      if (!nombre || isNaN(cantidad) || cantidad <= 0) {
+        alert("Seleccione un producto válido y cantidad mayor a 0.");
         return;
       }
 
-      pedido.push({ cliente, producto: nombreProducto, cantidad, subtotal });
+      const existente = productosPedido.find(p => p.nombre === nombre);
+      if (existente) {
+        existente.cantidad += cantidad;
+      } else {
+        productosPedido.push({ nombre, cantidad, precio });
+      }
 
-      mostrarPedidoTemp();
+      actualizarResumen();
     }
 
-    function mostrarPedidoTemp() {
-      const div = document.getElementById("pedidoTemp");
-      div.innerHTML = "<h4>Pedido Temporal:</h4>";
+    function actualizarResumen() {
+      const lista = document.getElementById("resumenLista");
+      const totalSpan = document.getElementById("totalSpan");
+      lista.innerHTML = "";
       let total = 0;
-      pedido.forEach((item) => {
-        div.innerHTML += `<p>${item.cantidad} x ${item.producto} = $${item.subtotal.toFixed(2)}</p>`;
-        total += item.subtotal;
+
+      productosPedido.forEach(p => {
+        const subtotal = p.precio * p.cantidad;
+        total += subtotal;
+        const li = document.createElement("li");
+        li.textContent = `${p.cantidad} x ${p.nombre} = $${subtotal.toFixed(2)}`;
+        lista.appendChild(li);
       });
-      div.innerHTML += `<strong>Total: $${total.toFixed(2)}</strong>`;
+
+      totalSpan.textContent = total.toFixed(2);
     }
 
-    function confirmarPedido() {
-      if (pedido.length === 0) {
-        alert("No hay productos en el pedido.");
+    function guardarPedido() {
+      const cliente = document.getElementById("clienteInput").value.trim();
+      if (!cliente) {
+        alert("Debe ingresar un nombre de cliente.");
+        return;
+      }
+      if (productosPedido.length === 0) {
+        alert("Debe agregar al menos un producto.");
         return;
       }
 
-      const clienteActual = pedido[0].cliente;
-
-      const productos = pedido.map(item => {
-        const nombre = item.producto.split(" - $")[0];
-        const precio = parseFloat(item.producto.split(" - $")[1]);
-        return {
-          nombre,
-          cantidad: item.cantidad,
-          precio
-        };
-      });
-
-      const subtotal = productos.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
-
-      let pedidosGuardados = JSON.parse(localStorage.getItem("pedidos")) || [];
-      pedidosGuardados = pedidosGuardados.filter(p => p.cliente !== clienteActual);
-
-      pedidosGuardados.push({
-        cliente: clienteActual,
-        productos: productos,
-        subtotal: subtotal,
+      const subtotal = productosPedido.reduce((sum, p) => sum + p.cantidad * p.precio, 0);
+      const nuevoPedido = {
+        cliente,
+        productos: productosPedido,
+        subtotal,
         fechaPago: null
+      };
+
+      fetch('http://localhost:3000/pedidos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevoPedido)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Error al guardar pedido");
+        alert("Pedido guardado correctamente");
+        window.location.href = "pedidos.html";
+      })
+      .catch(err => {
+        alert("Hubo un error al guardar el pedido");
+        console.error(err);
       });
-
-      localStorage.setItem("pedidos", JSON.stringify(pedidosGuardados));
-
-      alert("Pedido confirmado. Gracias!");
-
-      // Reiniciar formulario
-      pedido.length = 0;
-      document.getElementById("pedidoTemp").innerHTML = "";
-      document.getElementById("cliente").value = "";
-      document.getElementById("cliente").disabled = false;
-      document.getElementById("cantidad").value = 1;
     }
   </script>
 </body>

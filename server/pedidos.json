@@ -1,0 +1,82 @@
+[
+  {
+    "cliente": "Juan",
+    "productos": [
+      {
+        "nombre": "Hamburguesa",
+        "cantidad": 2,
+        "precio": 5
+      },
+      {
+        "nombre": "Papas",
+        "cantidad": 1,
+        "precio": 4
+      }
+    ],
+    "subtotal": 14,
+    "fechaPago": null
+  },
+  {
+    "cliente": "Pau",
+    "productos": [
+      {
+        "nombre": "Hamburguesa",
+        "cantidad": 3,
+        "precio": 5
+      },
+      {
+        "nombre": "Papas",
+        "cantidad": 1,
+        "precio": 4
+      }
+    ],
+    "subtotal": 19,
+    "fechaPago": null
+  },
+  {
+    "cliente": "Carmen",
+    "productos": [
+      {
+        "producto": "Hamburguesa",
+        "cantidad": 1,
+        "precio": 5
+      }
+    ],
+    "subtotal": 5,
+    "fechaPago": null
+  },
+  {
+    "cliente": "sofia",
+    "productos": [
+      {
+        "nombre": "Hamburguesa",
+        "cantidad": 1,
+        "precio": 5
+      }
+    ],
+    "subtotal": 5,
+    "fechaPago": null
+  },
+  {
+    "cliente": "amanda",
+    "productos": [
+      {
+        "nombre": "Hamburguesa",
+        "cantidad": 2,
+        "precio": 5
+      },
+      {
+        "nombre": "Papas",
+        "cantidad": 2,
+        "precio": 4
+      },
+      {
+        "nombre": "Refresco",
+        "cantidad": 1,
+        "precio": 2
+      }
+    ],
+    "subtotal": 20,
+    "fechaPago": null
+  }
+]
