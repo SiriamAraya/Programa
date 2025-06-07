@@ -1,4 +1,4 @@
-/* Global */
+/* Global */ 
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -37,6 +37,16 @@ table {
   overflow: hidden;
 }
 
+/* Estilo para menú */
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin: 1rem 0;
+  flex-direction: row;
+}
+
 /* Botones y enlaces estilo botón */
 button, .menu a {
   background-color: #27ae60;
@@ -53,6 +63,7 @@ button, .menu a {
   max-width: 200px;
   min-width: 100px;
   text-align: center;
+  text-decoration: none;
 }
 
 button:hover, .menu a:hover {
@@ -177,13 +188,16 @@ input:focus, textarea:focus, select:focus {
 @media (max-width: 480px) {
   .menu {
     flex-direction: column;
-    max-width: 100%;
+    align-items: stretch;
+    width: 100%;
+    padding: 0 0.5rem;
     margin: 0 auto 2rem auto;
   }
 
   .menu a, button {
     width: 100%;
     max-width: 100%;
+    text-align: center;
   }
 
   .form-row {
