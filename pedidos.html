@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="css/estilos.css">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   <title>Ver Pedidos</title>
  
 </head>
@@ -27,58 +31,6 @@
     </thead>
     <tbody id="listaPedidos"></tbody>
   </table>
-
-  <script>
-    // Obtener todos los pedidos guardados en localStorage
-    const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
-    const tbody = document.getElementById("listaPedidos");
-
-    // Agrupar pedidos por cliente
-    const pedidosPorCliente = pedidos.reduce((acc, item) => {
-      if (!acc[item.cliente]) acc[item.cliente] = [];
-      acc[item.cliente].push(item);
-      return acc;
-    }, {});
-
-    // Mostrar pedidos en la tabla
-    if (Object.keys(pedidosPorCliente).length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4">No hay pedidos registrados.</td></tr>';
-    } else {
-      for (const cliente in pedidosPorCliente) {
-        const items = pedidosPorCliente[cliente];
-        let productosHTML = "<ul>";
-        let total = 0;
-
-        items.forEach(i => {
-          i.productos.forEach(prod => {
-            const subtotal = prod.cantidad * prod.precio;
-            productosHTML += `<li>${prod.cantidad} x ${prod.nombre} = $${subtotal.toFixed(2)}</li>`;
-          });
-          total += i.subtotal;
-        });
-
-        productosHTML += "</ul>";
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${cliente}</td>
-          <td>${productosHTML}</td>
-          <td>$${total.toFixed(2)}</td>
-          <td><button onclick="editarPedido('${cliente}')">Agregar al Pedido</button></td>
-        `;
-        tbody.appendChild(tr);
-      }
-    }
-
-    // Función para editar pedido
-    function editarPedido(cliente) {
-      const pedidosCliente = pedidosPorCliente[cliente];
-      if (pedidosCliente.length > 0) {
-        // Tomar el último pedido para editar
-        localStorage.setItem("pedidoEditar", JSON.stringify(pedidosCliente[pedidosCliente.length - 1]));
-        window.location.href = "agregar.html";
-      }
-    }
-  </script>
+   <script src="pedidos.js"></script>
 </body>
 </html>
