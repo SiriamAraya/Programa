@@ -5,64 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menú Principal</title>
   <style>
-    /* Body */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f7fa;
-      padding: 30px 20px;
-      max-width: 720px;
-      margin: 0 auto;
-      color: #333;
-    }
-    /* Título principal */
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-      font-weight: 700;
-      font-size: 28px;
-    }
+ /* Body */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  padding: 30px 20px;
+  max-width: 960px;       /* más ancho para pantallas grandes */
+  margin: 0 auto;
+  color: #333;
+}
 
-    /* Menú vertical */
-    .menu {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      max-width: 320px;
-      margin: 0 auto 40px auto;
-    }
-    .menu a {
-      display: inline-block;
-      background-color: #27ae60;
-      color: white;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 20px;
-      padding: 14px 24px;
-      border-radius: 8px;
-      box-shadow: 0 3px 8px rgba(39, 174, 96, 0.5);
-      width: 100%;
-      text-align: center;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    .menu a:hover,
-    .menu a:focus {
-      background-color: #219150;
-      box-shadow: 0 6px 14px rgba(33, 145, 80, 0.8);
-      outline: none;
-    }
+/* Título principal */
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-weight: 700;
+  font-size: 28px;
+}
 
-    /* Responsive para móvil */
-    @media (max-width: 480px) {
-      .menu {
-        max-width: 100%;
-      }
-      .menu a {
-        font-size: 22px;
-        padding: 16px 28px;
-      }
-    }
+/* Menú vertical */
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 400px;        /* ancho mayor para pantallas grandes */
+  margin: 0 auto 40px auto;
+  width: 100%;             /* que ocupe todo el ancho disponible */
+}
+
+.menu a {
+  display: inline-block;
+  background-color: #27ae60;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 20px;
+  padding: 14px 24px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(39, 174, 96, 0.5);
+  width: 100%;             /* links ocupan todo el ancho del contenedor */
+  text-align: center;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu a:hover,
+.menu a:focus {
+  background-color: #219150;
+  box-shadow: 0 6px 14px rgba(33, 145, 80, 0.8);
+  outline: none;
+}
+
+/* Responsive para móvil */
+@media (max-width: 480px) {
+  body {
+    padding: 20px 10px;    /* menos padding lateral */
+  }
+  .menu {
+    max-width: 100%;
+  }
+  .menu a {
+    font-size: 22px;
+    padding: 16px 28px;
+  }
+}
+
   </style>
 </head>
 <body>

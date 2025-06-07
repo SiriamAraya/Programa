@@ -223,3 +223,112 @@ input:focus, textarea:focus, select:focus {
     align-items: stretch;
   }
 }
+
+#barra-menu {
+  position: relative;
+  background-color: transparent; /* Quitamos fondo para que no opaque botones */
+  padding: 0;
+  max-width: 720px;
+  margin: 1rem auto;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem; /* igual a .menu */
+}
+
+#barra-menu nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: row;
+  width: 100%;
+  background-color: transparent; /* igual */
+  position: static; /* para que no se superponga en desktop */
+  max-height: none; /* para que no haya animación cuando no es responsive */
+  overflow: visible;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#barra-menu nav a {
+  background-color: #27ae60;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.625rem 1.125rem; /* igual que .menu */
+  border-radius: 0.375rem; /* igual que .menu */
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgb(39 174 96 / 0.4);
+  transition: background-color 0.3s ease;
+  width: auto;
+  max-width: 200px;
+  min-width: 100px;
+  text-align: center;
+}
+
+#barra-menu nav a:hover {
+  background-color: #219150;
+  box-shadow: 0 4px 12px rgb(33 145 80 / 0.6);
+}
+
+/* Checkbox y hamburguesa */
+
+#menu-check {
+  display: none;
+}
+
+.labelMenu {
+  display: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+}
+
+.labelMenu img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  #barra-menu {
+    padding: 0.5rem;
+  }
+
+  .labelMenu {
+    display: block;
+  }
+
+  #barra-menu nav {
+    flex-direction: column;
+    background-color: #27ae60; /* Aquí mantenemos verde para el menú desplegable */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 8px 8px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  }
+
+  #menu-check:checked + .labelMenu + nav {
+    max-height: 500px;
+  }
+
+  #barra-menu nav a {
+    min-width: 100%;
+    padding: 1rem;
+    max-width: none;
+    box-shadow: none; /* para que el estilo sea limpio en móvil */
+  }
+
+  #barra-menu nav a:hover {
+    box-shadow: none;
+  }
+}
