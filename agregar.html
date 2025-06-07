@@ -21,19 +21,38 @@
   </nav>
 
   <div id="menu-pedido" class="menu activo">
-    <h3>Agregar Pedido</h3>
+  <h3>Agregar Pedido</h3>
+
+  <div class="formulario-horizontal">
+  <div class="form-row">
+    <label for="cliente">Nombre:</label>
     <input type="text" id="cliente" placeholder="Nombre del cliente" />
+  </div>
+
+  <div class="form-row">
+    <label for="producto">Producto:</label>
     <select id="producto">
       <option value="5">Hamburguesa - $5</option>
       <option value="3">Refresco - $3</option>
       <option value="4">Papas - $4</option>
       <option value="7">Pizza - $7</option>
     </select>
+  </div>
+
+  <div class="form-row">
+    <label for="cantidad">Cantidad:</label>
     <input type="number" id="cantidad" min="1" value="1" />
+  </div>
+
+  <div class="botones">
     <button onclick="agregarPedidoTemp()">Agregar al pedido</button>
     <button onclick="confirmarPedido()">Confirmar Pedido</button>
-    <div id="pedidoTemp"></div>
   </div>
+
+  <div id="pedidoTemp"></div>
+</div>
+
+
     <script src="agregar.js"></script>
 </body>
 </html>
