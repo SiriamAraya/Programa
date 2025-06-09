@@ -366,7 +366,7 @@ input:focus, textarea:focus, select:focus {
       cursor: pointer;
     }
 
-    /* Contenedores de cierres y resúmenes */
+
 .cierres-list, .resumenes {
   background: white;
   padding: 1rem 1.5rem;
