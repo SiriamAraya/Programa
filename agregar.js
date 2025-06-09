@@ -1,16 +1,15 @@
-// Configuración Firebase (compat)
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
   authDomain: "programa-27166.firebaseapp.com",
   databaseURL: "https://programa-27166-default-rtdb.firebaseio.com",
   projectId: "programa-27166",
-  storageBucket: "programa-27166.firebasestorage.app",
+  storageBucket: "programa-27166.appspot.com",
   messagingSenderId: "672184644976",
   appId: "1:672184644976:web:f4eb4b9ab4e49cc4138bb5",
   measurementId: "G-5ZG0TRNC2E"
 };
 
-// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const db = firebase.database();
@@ -31,7 +30,6 @@ window.onload = function() {
   const clienteEditar = getClienteFromUrl();
   if (!clienteEditar) return;
 
-  // Escuchar cambios en tiempo real en Firebase
   db.ref('pedidos/' + clienteEditar).on('value', snapshot => {
     if (snapshot.exists()) {
       const pedidoObj = snapshot.val();
@@ -43,13 +41,13 @@ window.onload = function() {
           cliente: pedidoObj.cliente,
           producto: `${p.nombre} - $${parseFloat(p.precio).toFixed(2)}`,
           cantidad: p.cantidad,
-          subtotal: p.precio * p.cantidad
+          subtotal: p.precio * p.cantidad,
+          editable: false
         }));
 
         mostrarPedidoTemp();
       }
     } else {
-      console.log("No existe pedido para el cliente:", clienteEditar);
       pedido = [];
       mostrarPedidoTemp();
       inputCliente.disabled = false;
@@ -61,27 +59,52 @@ window.onload = function() {
 function agregarPedidoTemp() {
   const cliente = inputCliente.value.trim();
   const cantidad = parseInt(inputCantidad.value);
-  const nombreProducto = selectProducto.options[selectProducto.selectedIndex].text;
+  const nombreProducto = selectProducto.options[selectProducto.selectedIndex]?.text;
   const precio = parseFloat(selectProducto.value);
-  const subtotal = precio * cantidad;
 
-  if (cliente === "" || isNaN(cantidad) || cantidad <= 0) {
-    alert("Por favor, ingrese un nombre de cliente válido y una cantidad.");
+  if (cliente === "" || isNaN(cantidad) || cantidad <= 0 || !nombreProducto) {
+    alert("Por favor, ingrese un nombre válido, cantidad y seleccione un producto.");
     return;
   }
 
-  pedido.push({ cliente, producto: nombreProducto, cantidad, subtotal });
+  const subtotal = precio * cantidad;
+  pedido.push({
+    cliente,
+    producto: nombreProducto,
+    cantidad,
+    subtotal,
+    editable: true
+  });
+
   mostrarPedidoTemp();
 }
 
 function mostrarPedidoTemp() {
   divPedidoTemp.innerHTML = "<h4>Pedido Temporal:</h4>";
   let total = 0;
-  pedido.forEach(item => {
-    divPedidoTemp.innerHTML += `<p>${item.cantidad} x ${item.producto} = $${item.subtotal.toFixed(2)}</p>`;
+
+  pedido.forEach((item, index) => {
+    divPedidoTemp.innerHTML += `
+      <p>
+        ${item.cantidad} x ${item.producto} = $${item.subtotal.toFixed(2)}
+        ${item.editable ? `<button onclick="eliminarProducto(${index})">Eliminar</button>` : ` <span style="color:gray;">(Confirmado)</span>`}
+      </p>`;
     total += item.subtotal;
   });
+
   divPedidoTemp.innerHTML += `<strong>Total: $${total.toFixed(2)}</strong>`;
+}
+
+function eliminarProducto(index) {
+  if (!pedido[index].editable) {
+    alert("Este producto ya fue confirmado y no se puede eliminar.");
+    return;
+  }
+
+  if (confirm("¿Desea eliminar este producto del pedido?")) {
+    pedido.splice(index, 1);
+    mostrarPedidoTemp();
+  }
 }
 
 function confirmarPedido() {
@@ -109,16 +132,14 @@ function confirmarPedido() {
     productos: productos,
     subtotal: subtotal,
     fechaPago: null
-  })
-  .then(() => {
+  }).then(() => {
     alert("Pedido confirmado y guardado. Gracias!");
     pedido.length = 0;
     divPedidoTemp.innerHTML = "";
     inputCliente.value = "";
     inputCliente.disabled = false;
     inputCantidad.value = 1;
-  })
-  .catch(error => {
+  }).catch(error => {
     alert("Error al guardar el pedido: " + error.message);
   });
 }
