@@ -15,16 +15,13 @@ firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const db = firebase.database();
 
-
 const tbody = document.getElementById("listaPedidos");
 
 let pedidos = [];
 let clienteActual = null;
 let totalActual = 0;
 
-// Variable global para almacenar localmente las ventas pagadas del día
-let ventasDelDiaLocal = [];
-
+// Variables modal y campos
 const modal = document.getElementById("modalPago");
 const cerrarModalBtn = document.getElementById("cerrarModal");
 const totalPagoInput = document.getElementById("totalPago");
@@ -33,21 +30,19 @@ const tipoPagoSelect = document.getElementById("tipoPago");
 const resultadoPagoDiv = document.getElementById("resultadoPago");
 const btnProcesarPago = document.getElementById("btnProcesarPago");
 
-// Cargar pedidos en tiempo real desde Firebase
-function cargarPedidosFirebase() {
-  db.ref('pedidos').on('value', (snapshot) => {
-    pedidos = [];
-    snapshot.forEach(childSnapshot => {
-      const pedido = childSnapshot.val();
-      pedido.id = childSnapshot.key;
-      pedidos.push(pedido);
-    });
-    agruparYMostrarPedidos();
+// Escuchar cambios en tiempo real en la rama 'pedidos'
+db.ref('pedidos').on('value', (snapshot) => {
+  pedidos = [];
+  snapshot.forEach(childSnapshot => {
+    const pedido = childSnapshot.val();
+    pedido.id = childSnapshot.key;
+    pedidos.push(pedido);
   });
-}
+  agruparYMostrarPedidos();
+});
 
 function agruparYMostrarPedidos() {
-  tbody.innerHTML = "";
+  tbody.innerHTML = ""; // Limpiar la tabla
 
   const pedidosPorCliente = pedidos.reduce((acc, item) => {
     if (!acc[item.cliente]) acc[item.cliente] = [];
@@ -86,8 +81,7 @@ function agruparYMostrarPedidos() {
   }
 }
 
-cargarPedidosFirebase();
-
+// Manejador para botones "Pagar"
 tbody.addEventListener("click", (e) => {
   if (e.target.classList.contains("btnPagar")) {
     const cliente = e.target.getAttribute("data-cliente");
@@ -148,9 +142,6 @@ btnProcesarPago.addEventListener("click", () => {
   // Filtrar los pedidos pagados del cliente actual
   const pedidosPagados = pedidos.filter(p => p.cliente === clienteActual);
 
-  // Guardar localmente en la variable ventasDelDiaLocal
-  ventasDelDiaLocal = ventasDelDiaLocal.concat(pedidosPagados);
-
   // Guardar ventas pagadas en Firebase (append)
   let ventasDelDiaRef = db.ref('ventasDelDia');
   ventasDelDiaRef.once('value').then(snapshot => {
@@ -160,23 +151,20 @@ btnProcesarPago.addEventListener("click", () => {
   }).then(() => {
     // Eliminar pedidos pagados de Firebase para que no aparezcan más
     return eliminarPedidosCliente(clienteActual);
-  }).then(() => {
-    // La lista de pedidos se actualizará automáticamente por el listener Firebase
   }).catch(error => {
     console.error("Error guardando la venta o eliminando pedidos:", error);
   });
 
   setTimeout(() => {
     modal.style.display = "none";
-  }, 3000);
+  }, 10000);
 });
 
-// Función para eliminar pedidos pagados de un cliente en Firebase
 function eliminarPedidosCliente(cliente) {
   const updates = {};
   pedidos.forEach(p => {
     if (p.cliente === cliente) {
-      updates['/pedidos/' + p.id] = null; // borrar en Firebase
+      updates['/pedidos/' + p.id] = null;
     }
   });
   return db.ref().update(updates);

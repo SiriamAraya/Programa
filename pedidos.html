@@ -9,22 +9,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   <title>Ver Pedidos</title>
- 
 </head>
-<body>
-   <section id="barra-menu">
+<body data-role="vendedor">
+
+  <section id="barra-menu">
     <input type="checkbox" id="menu-check" />
     <label for="menu-check" class="labelMenu">
       <img src="img/menu.webp" alt="Menú">
     </label>
-    <nav>
-      <a href="index.html">Inicio</a>
-    <a href="agregar.html">Agregar Pedido</a>
-    <a href="pedidos.html">Agregar al Pedido</a>
-    <a href="pagos.html">Registrar Pago</a>
-    <a href="cierre.html">Hacer Cierre</a>
-    </nav>
+    <nav id="menu"></nav>
   </section>
+
   <h2>Pedidos Realizados</h2>
   <table>
     <thead>
@@ -37,6 +32,9 @@
     </thead>
     <tbody id="listaPedidos"></tbody>
   </table>
-   <script src="pedidos.js"></script>
+
+  <script src="menu.js"></script>
+  <script src="pedidos.js"></script>
+
 </body>
 </html>

@@ -1,24 +1,28 @@
 // Configuración Firebase (compat)
-const firebaseConfig = {
-  apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
-  authDomain: "programa-27166.firebaseapp.com",
-  databaseURL: "https://programa-27166-default-rtdb.firebaseio.com",
-  projectId: "programa-27166",
-  storageBucket: "programa-27166.firebasestorage.app",
-  messagingSenderId: "672184644976",
-  appId: "1:672184644976:web:f4eb4b9ab4e49cc4138bb5",
-  measurementId: "G-5ZG0TRNC2E"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
+    authDomain: "programa-27166.firebaseapp.com",
+    databaseURL: "https://programa-27166-default-rtdb.firebaseio.com",
+    projectId: "programa-27166",
+    storageBucket: "programa-27166.firebasestorage.app",
+    messagingSenderId: "672184644976",
+    appId: "1:672184644976:web:f4eb4b9ab4e49cc4138bb5",
+    measurementId: "G-5ZG0TRNC2E"
+  };
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
-const db = firebase.database();
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+  const db = firebase.database();
 
-const tbody = document.getElementById("listaPedidos");
+  const tbody = document.getElementById("listaPedidos");
 
-    db.ref("pedidos").once("value").then(snapshot => {
+  function cargarPedidos() {
+    db.ref("pedidos").on("value", snapshot => {
       const pedidos = snapshot.val();
+
+      // Limpiar tabla para evitar duplicados
+      tbody.innerHTML = "";
 
       if (!pedidos) {
         tbody.innerHTML = '<tr><td colspan="4">No hay pedidos registrados.</td></tr>';
@@ -48,8 +52,11 @@ const tbody = document.getElementById("listaPedidos");
         tbody.appendChild(tr);
       });
     });
+  }
 
-    function editarPedido(cliente) {
-      // Redirigir con cliente en la URL
-      window.location.href = `agregar.html?cliente=${encodeURIComponent(cliente)}`;
-    }
+  function editarPedido(cliente) {
+    window.location.href = `agregar.html?cliente=${encodeURIComponent(cliente)}`;
+  }
+
+  // Inicializar carga en tiempo real
+  cargarPedidos();

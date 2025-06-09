@@ -3,39 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/estilos.css" />
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   <title>Cierre Diario</title>
 </head>
-<body>
-   <section id="barra-menu">
+<body data-role="caja">
+  <section id="barra-menu">
     <input type="checkbox" id="menu-check" />
     <label for="menu-check" class="labelMenu">
-      <img src="img/menu.webp" alt="Menú">
+      <img src="img/menu.webp" alt="Menú" />
     </label>
-    <nav>
-      <a href="index.html">Inicio</a>
-    <a href="agregar.html">Agregar Pedido</a>
-    <a href="pedidos.html">Agregar al Pedido</a>
-    <a href="pagos.html">Registrar Pago</a>
-    <a href="cierre.html">Hacer Cierre</a>
-    </nav>
+
+    <!-- Aquí el menú dinámico -->
+    <nav id="menu"></nav>
   </section>
+
   <h2>Cierre Diario de Ventas</h2>
   <button id="btnCerrarDia">Hacer cierre</button>
 
   <div class="cierres-list">
     <h3>Cierres anteriores:</h3>
-    <div id="listaCierres">
-      <!-- Lista de cierres con botones ver detalle -->
-    </div>
+    <input type="date" id="fechaBuscar" />
+    <div id="listaCierres"></div>
   </div>
 
-  <!-- Modal para mostrar detalle de cierre -->
-  <div class="modal-bg" id="modalDetalle" style="display:none;">
+  <div class="modal-bg" id="modalDetalle">
     <div class="modal">
       <div class="modal-header">
         <h3 id="modalFecha">Detalle del cierre</h3>
@@ -61,6 +56,9 @@
       </table>
     </div>
   </div>
-    <script src="cierre.js"></script>
+
+  <!-- Carga el menú y control de acceso antes del script propio -->
+  <script src="menu.js"></script>
+  <script src="cierre.js"></script>
 </body>
 </html>

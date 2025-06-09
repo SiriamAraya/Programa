@@ -10,55 +10,66 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   <title>Agregar Pedido</title>
 </head>
-<body>
+<body data-role="vendedor">
 
-    <section id="barra-menu">
+  <section id="barra-menu">
     <input type="checkbox" id="menu-check" />
     <label for="menu-check" class="labelMenu">
       <img src="img/menu.webp" alt="Menú">
     </label>
-    <nav>
-      <a href="index.html">Inicio</a>
-    <a href="agregar.html">Agregar Pedido</a>
-    <a href="pedidos.html">Agregar al Pedido</a>
-    <a href="pagos.html">Registrar Pago</a>
-    <a href="cierre.html">Hacer Cierre</a>
-    </nav>
+
+    <!-- Aquí menú dinámico -->
+    <nav id="menu"></nav>
   </section>
 
   <div id="menu-pedido" class="menu activo">
-  <h3>Agregar Pedido</h3>
+    <h3>Agregar Pedido</h3>
 
-  <div class="formulario-horizontal">
-  <div class="form-row">
-    <label for="cliente">Nombre:</label>
-    <input type="text" id="cliente" placeholder="Nombre del cliente" />
+    <div class="formulario-horizontal">
+
+      <div class="form-row">
+        <label for="cliente">Nombre:</label>
+        <input type="text" id="cliente" placeholder="Nombre del cliente" />
+      </div>
+
+      <!-- Combo nuevo: Tipo -->
+      <div class="form-row">
+        <label for="tipo">Tipo:</label>
+        <select id="tipo" onchange="actualizarProductosPorTipo()">
+          <option value="">Seleccione un tipo</option>
+          <option value="cervezas">Cervezas</option>
+          <option value="comida">Comida</option>
+          <option value="bebidas">Bebidas</option>
+        </select>
+      </div>
+
+      <!-- Combo modificado: Producto -->
+      <div class="form-row">
+        <label for="producto">Producto:</label>
+        <select id="producto">
+          <!-- Se llena dinámicamente desde JS -->
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" min="1" value="1" />
+      </div>
+
+      <div class="botones">
+        <button onclick="agregarPedidoTemp()">Agregar al pedido</button>
+        <button onclick="confirmarPedido()">Confirmar Pedido</button>
+      </div>
+
+      <div id="pedidoTemp"></div>
+
+    </div>
   </div>
 
-  <div class="form-row">
-    <label for="producto">Producto:</label>
-    <select id="producto">
-      <option value="5">Hamburguesa - $5</option>
-      <option value="3">Refresco - $3</option>
-      <option value="4">Papas - $4</option>
-      <option value="7">Pizza - $7</option>
-    </select>
-  </div>
+  <!-- Script que genera menú dinámico y controla acceso -->
+  <script src="menu.js"></script>
 
-  <div class="form-row">
-    <label for="cantidad">Cantidad:</label>
-    <input type="number" id="cantidad" min="1" value="1" />
-  </div>
-
-  <div class="botones">
-    <button onclick="agregarPedidoTemp()">Agregar al pedido</button>
-    <button onclick="confirmarPedido()">Confirmar Pedido</button>
-  </div>
-
-  <div id="pedidoTemp"></div>
-</div>
-
-
-    <script src="agregar.js"></script>
+  <!-- Script funcionalidad de agregar pedido -->
+  <script src="agregar.js"></script>
 </body>
 </html>

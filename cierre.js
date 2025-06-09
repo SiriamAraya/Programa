@@ -1,4 +1,4 @@
-// Configuración Firebase (compat)
+// Config Firebase (compat)
 const firebaseConfig = {
   apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
   authDomain: "programa-27166.firebaseapp.com",
@@ -10,7 +10,6 @@ const firebaseConfig = {
   measurementId: "G-5ZG0TRNC2E"
 };
 
-// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const db = firebase.database();
@@ -22,48 +21,77 @@ const cerrarModalBtn = document.getElementById("cerrarModal");
 const detalleTabla = document.getElementById("detalleTabla");
 const modalFecha = document.getElementById("modalFecha");
 const totalModal = document.getElementById("totalModal");
+const fechaBuscar = document.getElementById("fechaBuscar");
 
-// Cargar cierres almacenados desde Firebase
+let listenerActived = false;  // Para controlar el listener en tiempo real
+
+// Cargar todos los cierres y mostrar con listener en tiempo real
 function cargarCierres() {
+  // Remover listener previo para evitar duplicados
+  if (listenerActived) {
+    db.ref('cierresDiarios').off('value');
+  }
+
   listaCierres.innerHTML = "<p>Cargando cierres...</p>";
 
-  firebase.database().ref('cierresDiarios').once('value')
-    .then(snapshot => {
-      const cierresObj = snapshot.val();
-      listaCierres.innerHTML = "";
+  db.ref('cierresDiarios').on('value', snapshot => {
+    const cierresObj = snapshot.val();
+    listaCierres.innerHTML = "";
 
-      if (!cierresObj) {
-        listaCierres.innerHTML = "<p>No hay cierres anteriores.</p>";
-        return;
-      }
+    if (!cierresObj) {
+      listaCierres.innerHTML = "<p>No hay cierres anteriores.</p>";
+      return;
+    }
 
-      const cierres = Object.values(cierresObj).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const cierres = Object.values(cierresObj).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-      cierres.forEach((cierre, index) => {
-        const div = document.createElement("div");
-        div.classList.add("cierre-item");
+    cierres.forEach((cierre, index) => {
+      const div = document.createElement("div");
+      div.classList.add("cierre-item");
 
-        const fechaStr = new Date(cierre.fecha).toLocaleString();
+      const fechaStr = new Date(cierre.fecha).toLocaleString();
 
-        div.innerHTML = `
-          <span>${fechaStr}</span>
-          <button data-index="${index}">Ver detalle</button>
-        `;
+      div.innerHTML = `
+        <span>${fechaStr}</span>
+        <button data-index="${index}">Ver detalle</button>
+      `;
 
-        div.querySelector("button").addEventListener("click", () => {
-          mostrarDetalle(cierre);
-        });
-
-        listaCierres.appendChild(div);
+      div.querySelector("button").addEventListener("click", () => {
+        mostrarDetalle(cierre);
       });
-    })
-    .catch(err => {
-      listaCierres.innerHTML = "<p>Error cargando cierres.</p>";
-      console.error(err);
+
+      listaCierres.appendChild(div);
     });
+  }, err => {
+    listaCierres.innerHTML = "<p>Error cargando cierres.</p>";
+    console.error(err);
+  });
+
+  listenerActived = true;
 }
 
-// Mostrar modal con detalle de un cierre
+function mostrarListaCierresFiltrados(cierresFiltrados, fechaSeleccionada) {
+  listaCierres.innerHTML = `<p>Cierres para la fecha: ${fechaSeleccionada}</p>`;
+
+  cierresFiltrados.forEach((cierre, index) => {
+    const div = document.createElement("div");
+    div.classList.add("cierre-item");
+
+    const fechaStr = new Date(cierre.fecha).toLocaleString();
+
+    div.innerHTML = `
+      <span>${fechaStr}</span>
+      <button data-index="${index}">Ver detalle</button>
+    `;
+
+    div.querySelector("button").addEventListener("click", () => {
+      mostrarDetalle(cierre);
+    });
+
+    listaCierres.appendChild(div);
+  });
+}
+
 function mostrarDetalle(cierre) {
   modalFecha.textContent = `Detalle del cierre - ${new Date(cierre.fecha).toLocaleString()}`;
 
@@ -92,21 +120,18 @@ function mostrarDetalle(cierre) {
   modalBg.style.display = "flex";
 }
 
-// Cerrar modal al hacer click en botón cerrar
 cerrarModalBtn.addEventListener("click", () => {
   modalBg.style.display = "none";
 });
 
-// Cerrar modal al hacer click fuera del contenido modal
 window.addEventListener("click", (event) => {
   if (event.target === modalBg) {
     modalBg.style.display = "none";
   }
 });
 
-// Función para hacer cierre, guardando en Firebase
 btnCerrarDia.addEventListener("click", () => {
-  firebase.database().ref('ventasDelDia').once('value')
+  db.ref('ventasDelDia').once('value')
     .then(snapshot => {
       const ventasDelDiaObj = snapshot.val();
 
@@ -115,28 +140,22 @@ btnCerrarDia.addEventListener("click", () => {
         return;
       }
 
-      // Convertir objeto ventasDelDia a arreglo
       const ventasDelDia = Object.values(ventasDelDiaObj);
 
-      return firebase.database().ref('cierresDiarios').once('value')
+      return db.ref('cierresDiarios').once('value')
         .then(cierresSnap => {
           const cierresObj = cierresSnap.val() || {};
-          const cierres = Object.values(cierresObj);
 
           const nuevoCierre = {
             fecha: new Date().toISOString(),
             ventas: ventasDelDia
           };
 
-          // Guardar nuevo cierre con push()
-          return firebase.database().ref('cierresDiarios').push(nuevoCierre)
-            .then(() => {
-              // Limpiar ventasDelDia
-              return firebase.database().ref('ventasDelDia').remove();
-            })
+          return db.ref('cierresDiarios').push(nuevoCierre)
+            .then(() => db.ref('ventasDelDia').remove())
             .then(() => {
               alert("Cierre del día realizado correctamente.");
-              cargarCierres();
+              // No llamar cargarCierres() aquí porque ya hay listener real
             });
         });
 
@@ -147,5 +166,50 @@ btnCerrarDia.addEventListener("click", () => {
     });
 });
 
-// Al cargar la página
+// Filtrar cierres por fecha
+fechaBuscar.addEventListener("change", function () {
+  const fechaSeleccionada = this.value; // YYYY-MM-DD
+
+  // Si se limpia el filtro, volvemos a activar el listener en tiempo real
+  if (!fechaSeleccionada) {
+    cargarCierres();
+    return;
+  }
+
+  // Desactivar listener en tiempo real para evitar conflicto
+  if (listenerActived) {
+    db.ref('cierresDiarios').off('value');
+    listenerActived = false;
+  }
+
+  listaCierres.innerHTML = "<p>Cargando cierres filtrados...</p>";
+
+  db.ref('cierresDiarios').once('value').then(snapshot => {
+    const cierresObj = snapshot.val();
+    if (!cierresObj) {
+      listaCierres.innerHTML = `<p>No hay cierres almacenados.</p>`;
+      return;
+    }
+
+    const cierresFiltrados = Object.values(cierresObj).filter(cierre => {
+      const fechaCierre = new Date(cierre.fecha);
+
+      const yyyy = fechaCierre.getFullYear();
+      const mm = String(fechaCierre.getMonth() + 1).padStart(2, '0');
+      const dd = String(fechaCierre.getDate()).padStart(2, '0');
+
+      const fechaFormateada = `${yyyy}-${mm}-${dd}`;
+
+      return fechaFormateada === fechaSeleccionada;
+    });
+
+    if (cierresFiltrados.length > 0) {
+      mostrarListaCierresFiltrados(cierresFiltrados, fechaSeleccionada);
+    } else {
+      listaCierres.innerHTML = `<p>No se encontró un cierre para la fecha ${fechaSeleccionada}.</p>`;
+    }
+  });
+});
+
+// Al iniciar página, cargar cierres con listener real
 cargarCierres();

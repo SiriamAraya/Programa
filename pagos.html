@@ -10,20 +10,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   <title>Pedidos y Pagos</title>
 </head>
-<body>
-   <section id="barra-menu">
+<body data-role="caja">
+
+  <section id="barra-menu">
     <input type="checkbox" id="menu-check" />
     <label for="menu-check" class="labelMenu">
-      <img src="img/menu.webp" alt="Menú">
+      <img src="img/menu.webp" alt="Menú" />
     </label>
-    <nav>
-      <a href="index.html">Inicio</a>
-    <a href="agregar.html">Agregar Pedido</a>
-    <a href="pedidos.html">Agregar al Pedido</a>
-    <a href="pagos.html">Registrar Pago</a>
-    <a href="cierre.html">Hacer Cierre</a>
-    </nav>
+
+    <!-- Menú generado dinámicamente -->
+    <nav id="menu"></nav>
   </section>
+
   <h2>Realizar Pago</h2>
   <table>
     <thead>
@@ -39,25 +37,38 @@
 
   <!-- Modal para pagar -->
   <div id="modalPago" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="close" id="cerrarModal" style="cursor:pointer;">&times;</span>
+    <div class="modal-content" style="max-width: 400px; margin: auto; padding: 20px;">
+
+      <span class="close" id="cerrarModal" style="cursor:pointer; float: right; font-size: 24px;">&times;</span>
       <h3>Registrar Pago</h3>
-      <label>Total a pagar (colones):</label>
-      <input type="number" id="totalPago" readonly />
 
-      <label>Monto recibido:</label>
-      <input type="number" id="montoRecibido" placeholder="Ingrese el pago" />
+      <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <label for="totalPago" style="flex: 1; margin-right: 10px;">Total a pagar (colones):</label>
+        <input type="number" id="totalPago" readonly style="flex: 1;" />
+      </div>
 
-      <label>Tipo de pago:</label>
-      <select id="tipoPago">
-        <option value="Efectivo">Efectivo</option>
-        <option value="Tarjeta">Tarjeta</option>
-      </select>
+      <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <label for="montoRecibido" style="flex: 1; margin-right: 10px;">Monto recibido:</label>
+        <input type="number" id="montoRecibido" placeholder="Ingrese el pago" style="flex: 1;" />
+      </div>
 
-      <button id="btnProcesarPago">Procesar Pago</button>
-      <div id="resultadoPago"></div>
+      <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        <label for="tipoPago" style="flex: 1; margin-right: 10px;">Tipo de pago:</label>
+        <select id="tipoPago" style="flex: 1;">
+          <option value="Efectivo">Efectivo</option>
+          <option value="Tarjeta">Tarjeta</option>
+        </select>
+      </div>
+
+      <button id="btnProcesarPago" style="width: 100%;">Procesar Pago</button>
+      <div id="resultadoPago" style="margin-top: 15px;"></div>
     </div>
   </div>
-<script src="pagos.js"></script>
+
+  <!-- Script que genera menú y controla acceso -->
+  <script src="menu.js"></script>
+
+  <!-- Funcionalidad específica para pagos -->
+  <script src="pagos.js"></script>
 </body>
 </html>
