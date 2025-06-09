@@ -142,11 +142,17 @@ btnProcesarPago.addEventListener("click", () => {
   // Filtrar los pedidos pagados del cliente actual
   const pedidosPagados = pedidos.filter(p => p.cliente === clienteActual);
 
+  // Agregar el tipoPago a cada pedido antes de guardar
+  const pedidosConTipoPago = pedidosPagados.map(pedido => ({
+    ...pedido,
+    tipoPago: tipo
+  }));
+
   // Guardar ventas pagadas en Firebase (append)
   let ventasDelDiaRef = db.ref('ventasDelDia');
   ventasDelDiaRef.once('value').then(snapshot => {
     let ventasDelDia = snapshot.val() || [];
-    ventasDelDia = ventasDelDia.concat(pedidosPagados);
+    ventasDelDia = ventasDelDia.concat(pedidosConTipoPago);
     return ventasDelDiaRef.set(ventasDelDia);
   }).then(() => {
     // Eliminar pedidos pagados de Firebase para que no aparezcan más

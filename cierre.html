@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/estilos.css" />
+  <title>Cierre Diario</title>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
-  <title>Cierre Diario</title>
 </head>
 <body data-role="caja">
   <section id="barra-menu">
@@ -16,8 +17,6 @@
     <label for="menu-check" class="labelMenu">
       <img src="img/menu.webp" alt="Menú" />
     </label>
-
-    <!-- Aquí el menú dinámico -->
     <nav id="menu"></nav>
   </section>
 
@@ -30,7 +29,17 @@
     <div id="listaCierres"></div>
   </div>
 
-  <div class="modal-bg" id="modalDetalle">
+  <div class="resumenes">
+    <h3>Resumen por semana:</h3>
+    <input type="week" id="inputSemana" />
+    <p id="totalSemana">₡0.00</p>
+
+    <h3>Resumen por mes:</h3>
+    <input type="month" id="inputMes" />
+    <p id="totalMes">₡0.00</p>
+  </div>
+
+  <div class="modal-bg" id="modalDetalle" style="display:none;">
     <div class="modal">
       <div class="modal-header">
         <h3 id="modalFecha">Detalle del cierre</h3>
@@ -57,7 +66,6 @@
     </div>
   </div>
 
-  <!-- Carga el menú y control de acceso antes del script propio -->
   <script src="menu.js"></script>
   <script src="cierre.js"></script>
 </body>

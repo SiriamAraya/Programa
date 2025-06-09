@@ -1,10 +1,10 @@
-// Config Firebase (compat)
+// Firebase Configuración
 const firebaseConfig = {
   apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
   authDomain: "programa-27166.firebaseapp.com",
   databaseURL: "https://programa-27166-default-rtdb.firebaseio.com",
   projectId: "programa-27166",
-  storageBucket: "programa-27166.firebasestorage.app",
+  storageBucket: "programa-27166.appspot.com",
   messagingSenderId: "672184644976",
   appId: "1:672184644976:web:f4eb4b9ab4e49cc4138bb5",
   measurementId: "G-5ZG0TRNC2E"
@@ -23,193 +23,202 @@ const modalFecha = document.getElementById("modalFecha");
 const totalModal = document.getElementById("totalModal");
 const fechaBuscar = document.getElementById("fechaBuscar");
 
-let listenerActived = false;  // Para controlar el listener en tiempo real
+const inputSemana = document.getElementById("inputSemana");
+const inputMes = document.getElementById("inputMes");
+const totalSemana = document.getElementById("totalSemana");
+const totalMes = document.getElementById("totalMes");
 
-// Cargar todos los cierres y mostrar con listener en tiempo real
-function cargarCierres() {
-  // Remover listener previo para evitar duplicados
-  if (listenerActived) {
-    db.ref('cierresDiarios').off('value');
-  }
+let listenerActived = false;
 
-  listaCierres.innerHTML = "<p>Cargando cierres...</p>";
+// Al iniciar, mostrar mensaje para que el usuario seleccione fecha
+listaCierres.innerHTML = "<p>Seleccione una fecha para ver cierres.</p>";
 
-  db.ref('cierresDiarios').on('value', snapshot => {
-    const cierresObj = snapshot.val();
-    listaCierres.innerHTML = "";
-
-    if (!cierresObj) {
-      listaCierres.innerHTML = "<p>No hay cierres anteriores.</p>";
-      return;
-    }
-
-    const cierres = Object.values(cierresObj).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-    cierres.forEach((cierre, index) => {
-      const div = document.createElement("div");
-      div.classList.add("cierre-item");
-
-      const fechaStr = new Date(cierre.fecha).toLocaleString();
-
-      div.innerHTML = `
-        <span>${fechaStr}</span>
-        <button data-index="${index}">Ver detalle</button>
-      `;
-
-      div.querySelector("button").addEventListener("click", () => {
-        mostrarDetalle(cierre);
-      });
-
-      listaCierres.appendChild(div);
-    });
-  }, err => {
-    listaCierres.innerHTML = "<p>Error cargando cierres.</p>";
-    console.error(err);
-  });
-
-  listenerActived = true;
-}
-
-function mostrarListaCierresFiltrados(cierresFiltrados, fechaSeleccionada) {
-  listaCierres.innerHTML = `<p>Cierres para la fecha: ${fechaSeleccionada}</p>`;
-
-  cierresFiltrados.forEach((cierre, index) => {
-    const div = document.createElement("div");
-    div.classList.add("cierre-item");
-
-    const fechaStr = new Date(cierre.fecha).toLocaleString();
-
-    div.innerHTML = `
-      <span>${fechaStr}</span>
-      <button data-index="${index}">Ver detalle</button>
-    `;
-
-    div.querySelector("button").addEventListener("click", () => {
-      mostrarDetalle(cierre);
-    });
-
-    listaCierres.appendChild(div);
-  });
-}
-
+// Mostrar modal con detalle, con tipo de pago incluido
 function mostrarDetalle(cierre) {
   modalFecha.textContent = `Detalle del cierre - ${new Date(cierre.fecha).toLocaleString()}`;
+  detalleTabla.innerHTML = `
+    <tr>
+      <th>Cliente</th>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Precio</th>
+      <th>Subtotal</th>
+      <th>Tipo de pago</th>
+    </tr>
+  `;
 
-  detalleTabla.innerHTML = "";
   let total = 0;
 
   cierre.ventas.forEach(venta => {
     venta.productos.forEach(producto => {
-      const subtotalProd = producto.cantidad * producto.precio;
-      total += subtotalProd;
+      const subtotal = producto.cantidad * producto.precio;
+      total += subtotal;
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
         <td>${venta.cliente}</td>
         <td>${producto.nombre}</td>
         <td>${producto.cantidad}</td>
         <td>₡${producto.precio.toFixed(2)}</td>
-        <td>₡${subtotalProd.toFixed(2)}</td>
+        <td>₡${subtotal.toFixed(2)}</td>
+        <td>${venta.tipoPago || 'N/A'}</td>
       `;
-      detalleTabla.appendChild(tr);
+      detalleTabla.appendChild(fila);
     });
   });
 
   totalModal.textContent = `₡${total.toFixed(2)}`;
-
   modalBg.style.display = "flex";
 }
 
-cerrarModalBtn.addEventListener("click", () => {
-  modalBg.style.display = "none";
+// Ocultar modal
+cerrarModalBtn.addEventListener("click", () => modalBg.style.display = "none");
+window.addEventListener("click", e => {
+  if (e.target === modalBg) modalBg.style.display = "none";
 });
 
-window.addEventListener("click", (event) => {
-  if (event.target === modalBg) {
-    modalBg.style.display = "none";
-  }
-});
+// Esta función queda para uso interno si quieres cargar todo (no se llama al inicio)
+function cargarCierres() {
+  if (listenerActived) db.ref('cierresDiarios').off('value');
+  listenerActived = true;
 
-btnCerrarDia.addEventListener("click", () => {
-  db.ref('ventasDelDia').once('value')
-    .then(snapshot => {
-      const ventasDelDiaObj = snapshot.val();
+  listaCierres.innerHTML = "<p>Cargando cierres...</p>";
 
-      if (!ventasDelDiaObj || Object.keys(ventasDelDiaObj).length === 0) {
-        alert("No hay ventas para cerrar el día.");
-        return;
-      }
+  db.ref('cierresDiarios').on('value', snapshot => {
+    const cierres = snapshot.val();
+    listaCierres.innerHTML = "";
 
-      const ventasDelDia = Object.values(ventasDelDiaObj);
-
-      return db.ref('cierresDiarios').once('value')
-        .then(cierresSnap => {
-          const cierresObj = cierresSnap.val() || {};
-
-          const nuevoCierre = {
-            fecha: new Date().toISOString(),
-            ventas: ventasDelDia
-          };
-
-          return db.ref('cierresDiarios').push(nuevoCierre)
-            .then(() => db.ref('ventasDelDia').remove())
-            .then(() => {
-              alert("Cierre del día realizado correctamente.");
-              // No llamar cargarCierres() aquí porque ya hay listener real
-            });
-        });
-
-    })
-    .catch(err => {
-      alert("Error al realizar cierre.");
-      console.error(err);
-    });
-});
-
-// Filtrar cierres por fecha
-fechaBuscar.addEventListener("change", function () {
-  const fechaSeleccionada = this.value; // YYYY-MM-DD
-
-  // Si se limpia el filtro, volvemos a activar el listener en tiempo real
-  if (!fechaSeleccionada) {
-    cargarCierres();
-    return;
-  }
-
-  // Desactivar listener en tiempo real para evitar conflicto
-  if (listenerActived) {
-    db.ref('cierresDiarios').off('value');
-    listenerActived = false;
-  }
-
-  listaCierres.innerHTML = "<p>Cargando cierres filtrados...</p>";
-
-  db.ref('cierresDiarios').once('value').then(snapshot => {
-    const cierresObj = snapshot.val();
-    if (!cierresObj) {
-      listaCierres.innerHTML = `<p>No hay cierres almacenados.</p>`;
+    if (!cierres) {
+      listaCierres.innerHTML = "<p>No hay cierres.</p>";
       return;
     }
 
-    const cierresFiltrados = Object.values(cierresObj).filter(cierre => {
-      const fechaCierre = new Date(cierre.fecha);
+    const arr = Object.values(cierres).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    arr.forEach(cierre => {
+      const div = document.createElement("div");
+      div.classList.add("cierre-item");
+      div.innerHTML = `
+        <span>${new Date(cierre.fecha).toLocaleString()}</span>
+        <button>Ver detalle</button>
+      `;
+      div.querySelector("button").addEventListener("click", () => mostrarDetalle(cierre));
+      listaCierres.appendChild(div);
+    });
+  });
+}
 
-      const yyyy = fechaCierre.getFullYear();
-      const mm = String(fechaCierre.getMonth() + 1).padStart(2, '0');
-      const dd = String(fechaCierre.getDate()).padStart(2, '0');
+// Filtrar cierres por fecha al cambiar fechaBuscar
+fechaBuscar.addEventListener("change", function () {
+  const fecha = this.value;
+  if (!fecha) {
+    listaCierres.innerHTML = "<p>Seleccione una fecha para ver cierres.</p>";
+    return;
+  }
 
-      const fechaFormateada = `${yyyy}-${mm}-${dd}`;
+  db.ref('cierresDiarios').once('value').then(snapshot => {
+    const cierres = snapshot.val();
+    listaCierres.innerHTML = "";
 
-      return fechaFormateada === fechaSeleccionada;
+    if (!cierres) {
+      listaCierres.innerHTML = "<p>No hay cierres.</p>";
+      return;
+    }
+
+    const filtrados = Object.values(cierres).filter(c => {
+      const d = new Date(c.fecha);
+      return d.toISOString().slice(0, 10) === fecha;
     });
 
-    if (cierresFiltrados.length > 0) {
-      mostrarListaCierresFiltrados(cierresFiltrados, fechaSeleccionada);
-    } else {
-      listaCierres.innerHTML = `<p>No se encontró un cierre para la fecha ${fechaSeleccionada}.</p>`;
+    if (filtrados.length === 0) {
+      listaCierres.innerHTML = "<p>No hay cierres en esa fecha.</p>";
+      return;
     }
+
+    filtrados.forEach(cierre => {
+      const div = document.createElement("div");
+      div.classList.add("cierre-item");
+      div.innerHTML = `
+        <span>${new Date(cierre.fecha).toLocaleString()}</span>
+        <button>Ver detalle</button>
+      `;
+      div.querySelector("button").addEventListener("click", () => mostrarDetalle(cierre));
+      listaCierres.appendChild(div);
+    });
   });
 });
 
-// Al iniciar página, cargar cierres con listener real
-cargarCierres();
+// Hacer cierre
+btnCerrarDia.addEventListener("click", () => {
+  db.ref('ventasDelDia').once('value')
+    .then(snapshot => {
+      const ventas = snapshot.val();
+      if (!ventas) return alert("No hay ventas para cerrar.");
+
+      const nuevoCierre = {
+        fecha: new Date().toISOString(),
+        ventas: Object.values(ventas)
+      };
+
+      return db.ref('cierresDiarios').push(nuevoCierre)
+        .then(() => db.ref('ventasDelDia').remove())
+        .then(() => alert("Cierre del día realizado correctamente."));
+    })
+    .catch(console.error);
+});
+
+// Calcular resumen semanal
+inputSemana.addEventListener("change", () => {
+  const [year, week] = inputSemana.value.split("-W");
+  if (!year || !week) return;
+
+  db.ref("cierresDiarios").once("value").then(snapshot => {
+    const cierres = Object.values(snapshot.val() || {});
+    let total = 0;
+
+    cierres.forEach(cierre => {
+      const fecha = new Date(cierre.fecha);
+      const fechaSem = getISOWeek(fecha);
+      if (fechaSem.year == year && fechaSem.week == parseInt(week)) {
+        cierre.ventas.forEach(v => v.productos.forEach(p => {
+          total += p.cantidad * p.precio;
+        }));
+      }
+    });
+
+    totalSemana.textContent = `₡${total.toFixed(2)}`;
+  });
+});
+
+// Calcular resumen mensual
+inputMes.addEventListener("change", () => {
+  const [anio, mes] = inputMes.value.split("-");
+  if (!anio || !mes) return;
+
+  db.ref("cierresDiarios").once("value").then(snapshot => {
+    const cierres = Object.values(snapshot.val() || {});
+    let total = 0;
+
+    cierres.forEach(cierre => {
+      const fecha = new Date(cierre.fecha);
+      if (fecha.getFullYear() == anio && (fecha.getMonth() + 1) == parseInt(mes)) {
+        cierre.ventas.forEach(v => v.productos.forEach(p => {
+          total += p.cantidad * p.precio;
+        }));
+      }
+    });
+
+    totalMes.textContent = `₡${total.toFixed(2)}`;
+  });
+});
+
+// Utilidad para semana ISO
+function getISOWeek(date) {
+  const f = new Date(date.getTime());
+  f.setHours(0, 0, 0, 0);
+  f.setDate(f.getDate() + 3 - (f.getDay() + 6) % 7);
+  const week1 = new Date(f.getFullYear(), 0, 4);
+  const weekNumber = 1 + Math.round(((f - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  return { year: f.getFullYear(), week: weekNumber };
+}
+
+// NO LLAMAMOS cargarCierres() al inicio para evitar mostrar cierres sin filtro
