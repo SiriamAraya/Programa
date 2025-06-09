@@ -111,7 +111,7 @@ function confirmarPedido() {
     fechaPago: null
   })
   .then(() => {
-    alert("Pedido confirmado y guardado en Firebase. Gracias!");
+    alert("Pedido confirmado y guardado. Gracias!");
     pedido.length = 0;
     divPedidoTemp.innerHTML = "";
     inputCliente.value = "";
@@ -119,7 +119,7 @@ function confirmarPedido() {
     inputCantidad.value = 1;
   })
   .catch(error => {
-    alert("Error al guardar el pedido en Firebase: " + error.message);
+    alert("Error al guardar el pedido: " + error.message);
   });
 }
 
