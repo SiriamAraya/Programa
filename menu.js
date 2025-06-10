@@ -8,7 +8,8 @@ const menus = {
     { href: 'cierre.html', text: 'Hacer Cierre' }
   ],
   cocina: [
-    { href: 'cocina.html', text: 'Cocina' }
+    { href: 'cocina.html', text: 'Cocina' },
+    { href: 'entregado.html', text: 'Listo Para Entregar' }
   ]
 };
 
