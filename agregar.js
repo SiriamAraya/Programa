@@ -1,4 +1,4 @@
-// Firebase Config
+// Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBMbS03YXelxtImddYi954A2CIT_IRlnUE",
   authDomain: "programa-27166.firebaseapp.com",
@@ -10,12 +10,57 @@ const firebaseConfig = {
   measurementId: "G-5ZG0TRNC2E"
 };
 
+// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
-firebase.analytics();
 const db = firebase.database();
+const lista = document.getElementById("listaCocina");
+
+// Escuchar pedidos pendientes
+function cargarPedidosPorPreparar() {
+  db.ref("pedidos").on("value", snapshot => {
+    lista.innerHTML = "";
+    const pedidos = snapshot.val();
+
+    if (!pedidos) {
+      lista.innerHTML = "<p>No hay pedidos pendientes.</p>";
+      return;
+    }
+
+    let hayPendientes = false;
+
+    Object.entries(pedidos).forEach(([clienteKey, pedido]) => {
+      const noPreparados = pedido.productos
+        .map((prod, index) => ({ ...prod, index }))
+        .filter(prod => !prod.preparado);
+
+      if (noPreparados.length > 0) {
+        hayPendientes = true;
+        const cliente = decodeURIComponent(clienteKey);
+        const div = document.createElement("div");
+        div.innerHTML = `<h3>${cliente}</h3><ul>${
+          noPreparados.map(prod => `
+            <li>
+              ${prod.cantidad} x ${prod.nombre}
+              <button onclick="marcarPreparado('${clienteKey}', ${prod.index})">Listo</button>
+            </li>`).join("")
+        }</ul>`;
+        lista.appendChild(div);
+      }
+    });
+
+    if (!hayPendientes) {
+      lista.innerHTML = "<p>No hay pedidos pendientes.</p>";
+    }
+  });
+}
+
+function marcarPreparado(clienteKey, index) {
+  db.ref(`pedidos/${clienteKey}/productos/${index}/preparado`).set(true).catch(error => {
+    alert("Error al marcar como preparado: " + error.message);
+  });
+}
 
 let pedido = [];
-
 const inputCliente = document.getElementById("cliente");
 const selectProducto = document.getElementById("producto");
 const inputCantidad = document.getElementById("cantidad");
@@ -42,7 +87,8 @@ window.onload = function() {
           producto: `${p.nombre} - $${parseFloat(p.precio).toFixed(2)}`,
           cantidad: p.cantidad,
           subtotal: p.precio * p.cantidad,
-          editable: false
+          editable: false,
+          preparado: p.preparado || false
         }));
 
         mostrarPedidoTemp();
@@ -54,7 +100,7 @@ window.onload = function() {
       inputCliente.value = "";
     }
   });
-}
+};
 
 function agregarPedidoTemp() {
   const cliente = inputCliente.value.trim();
@@ -68,13 +114,21 @@ function agregarPedidoTemp() {
   }
 
   const subtotal = precio * cantidad;
-  pedido.push({
-    cliente,
-    producto: nombreProducto,
-    cantidad,
-    subtotal,
-    editable: true
-  });
+  const existeIndex = pedido.findIndex(p => p.producto === nombreProducto && p.editable === true);
+
+  if (existeIndex >= 0) {
+    pedido[existeIndex].cantidad += cantidad;
+    pedido[existeIndex].subtotal += subtotal;
+  } else {
+    pedido.push({
+      cliente,
+      producto: nombreProducto,
+      cantidad,
+      subtotal,
+      editable: true,
+      preparado: false
+    });
+  }
 
   mostrarPedidoTemp();
 }
@@ -115,23 +169,44 @@ function confirmarPedido() {
 
   const clienteActual = pedido[0].cliente;
 
-  const productos = pedido.map(item => {
-    const nombre = item.producto.split(" - $")[0];
-    const precio = parseFloat(item.producto.split(" - $")[1]);
-    return {
-      nombre,
-      cantidad: item.cantidad,
-      precio
-    };
-  });
+  db.ref('pedidos/' + clienteActual).once('value').then(snapshot => {
+    let productosPrevios = [];
+    if (snapshot.exists()) {
+      productosPrevios = snapshot.val().productos || [];
+    }
 
-  const subtotal = productos.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+    // Nuevo arreglo para manejar productos combinados según preparado
+    const productosCombinados = [...productosPrevios];
 
-  db.ref('pedidos/' + clienteActual).set({
-    cliente: clienteActual,
-    productos: productos,
-    subtotal: subtotal,
-    fechaPago: null
+    pedido.filter(item => item.editable).forEach(item => {
+      const nombre = item.producto.split(" - $")[0];
+      const precio = parseFloat(item.producto.split(" - $")[1]);
+
+      // Buscar producto no preparado existente con el mismo nombre
+      const productoNoPreparado = productosCombinados.find(p => p.nombre === nombre && !p.preparado);
+
+      if (productoNoPreparado) {
+        // Si existe producto no preparado, sumamos la cantidad
+        productoNoPreparado.cantidad += item.cantidad;
+      } else {
+        // Si no existe producto no preparado, agregamos uno nuevo con preparado = false
+        productosCombinados.push({
+          nombre,
+          cantidad: item.cantidad,
+          precio,
+          preparado: false
+        });
+      }
+    });
+
+    const subtotal = productosCombinados.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+
+    return db.ref('pedidos/' + clienteActual).set({
+      cliente: clienteActual,
+      productos: productosCombinados,
+      subtotal,
+      fechaPago: null
+    });
   }).then(() => {
     alert("Pedido confirmado y guardado. Gracias!");
     pedido.length = 0;
@@ -144,6 +219,7 @@ function confirmarPedido() {
   });
 }
 
+// Productos disponibles
 const productosPorTipo = {
   cervezas: [
     { nombre: "Imperial", precio: 2 },
@@ -177,3 +253,6 @@ function actualizarProductosPorTipo() {
     });
   }
 }
+
+cargarPedidosPorPreparar();
+actualizarProductosPorTipo();
