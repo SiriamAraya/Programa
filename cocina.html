@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pedidos En Cocina</title>
-
   <style>
-    /* Reset básico */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -19,9 +17,44 @@
       color: #333;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
+    }
+
+    #barra-menu {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    #barra-menu nav {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 600px;
+    }
+
+    #barra-menu nav a {
+      background-color: #27ae60;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgb(39 174 96 / 0.4);
+      transition: background-color 0.3s ease;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    #barra-menu nav a:hover {
+      background-color: #219150;
+      box-shadow: 0 4px 12px rgb(33 145 80 / 0.6);
     }
 
     .main-container {
@@ -107,12 +140,11 @@
       font-size: 1.1rem;
     }
 
-    /* Responsive */
     @media (max-width: 480px) {
       .main-container {
         padding: 15px 20px;
       }
-      
+
       .titulo-principal {
         font-size: 1.5rem;
       }
@@ -129,6 +161,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
 </head>
 <body>
+
+  <section id="barra-menu">
+    <nav id="menu"></nav>
+  </section>
+
   <main class="main-container">
     <header class="header">
       <h1 class="titulo-principal">Pedidos por Preparar</h1>
