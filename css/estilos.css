@@ -367,6 +367,30 @@ input:focus, textarea:focus, select:focus {
     }
 
 
+    .modal-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+}
+
+/* Para ocultar correctamente usando inline style */
+.modal-bg[style*="display: none"] {
+  display: none !important;
+}
+
 .cierres-list, .resumenes {
   background: white;
   padding: 1rem 1.5rem;

@@ -98,16 +98,16 @@ function abrirModalPago(total, cliente) {
   resultadoPagoDiv.innerHTML = "";
   tipoPagoSelect.value = "Efectivo";
   montoRecibidoInput.disabled = false;
-  modal.style.display = "block";
+  document.getElementById("modalBg").style.display = "flex";
 }
 
 cerrarModalBtn.onclick = () => {
-  modal.style.display = "none";
+  document.getElementById("modalBg").style.display = "none";
 };
 
 window.onclick = (event) => {
   if (event.target === modal) {
-    modal.style.display = "none";
+    document.getElementById("modalBg").style.display = "none";
   }
 };
 

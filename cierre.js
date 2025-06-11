@@ -33,9 +33,15 @@ let listenerActived = false;
 // Al iniciar, mostrar mensaje para que el usuario seleccione fecha
 listaCierres.innerHTML = "<p>Seleccione una fecha para ver cierres.</p>";
 
-// Mostrar modal con detalle, con tipo de pago incluido
+// Mostrar modal con detalle, con tipo de pago incluido (modificar fecha igual)
 function mostrarDetalle(cierre) {
-  modalFecha.textContent = `Detalle del cierre - ${new Date(cierre.fecha).toLocaleString()}`;
+  const fechaFormateada = new Date(cierre.fecha + "T00:00:00").toLocaleDateString('es-CR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  modalFecha.textContent = `Detalle del cierre - ${fechaFormateada}`;
   detalleTabla.innerHTML = `
     <tr>
       <th>Cliente</th>
@@ -108,8 +114,9 @@ function cargarCierres() {
 }
 
 // Filtrar cierres por fecha al cambiar fechaBuscar
+// Filtrar cierres por fecha al cambiar fechaBuscar
 fechaBuscar.addEventListener("change", function () {
-  const fecha = this.value;
+  const fecha = this.value; // fecha en formato "YYYY-MM-DD"
   if (!fecha) {
     listaCierres.innerHTML = "<p>Seleccione una fecha para ver cierres.</p>";
     return;
@@ -124,10 +131,8 @@ fechaBuscar.addEventListener("change", function () {
       return;
     }
 
-    const filtrados = Object.values(cierres).filter(c => {
-      const d = new Date(c.fecha);
-      return d.toISOString().slice(0, 10) === fecha;
-    });
+    // Filtrar por comparación directa de strings, ya que fecha se guarda como "YYYY-MM-DD"
+    const filtrados = Object.values(cierres).filter(c => c.fecha === fecha);
 
     if (filtrados.length === 0) {
       listaCierres.innerHTML = "<p>No hay cierres en esa fecha.</p>";
@@ -137,8 +142,17 @@ fechaBuscar.addEventListener("change", function () {
     filtrados.forEach(cierre => {
       const div = document.createElement("div");
       div.classList.add("cierre-item");
+
+      // Mostrar fecha legible sin zona horaria, solo fecha
+      const fechaFormateada = new Date(cierre.fecha + "T00:00:00").toLocaleDateString('es-CR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
       div.innerHTML = `
-        <span>${new Date(cierre.fecha).toLocaleString()}</span>
+        <span>${fechaFormateada}</span>
         <button>Ver detalle</button>
       `;
       div.querySelector("button").addEventListener("click", () => mostrarDetalle(cierre));
@@ -154,8 +168,10 @@ btnCerrarDia.addEventListener("click", () => {
       const ventas = snapshot.val();
       if (!ventas) return alert("No hay ventas para cerrar.");
 
+      const fechaLocal = new Date().toLocaleDateString('sv-SE'); // ← CORREGIDO
+
       const nuevoCierre = {
-        fecha: new Date().toISOString(),
+        fecha: fechaLocal,
         ventas: Object.values(ventas)
       };
 
