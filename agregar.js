@@ -169,6 +169,9 @@ function confirmarPedido() {
 
   const clienteActual = pedido[0].cliente;
 
+  // Lista de productos que se marcan como preparados automáticamente (bebidas)
+  const productosNoPreparar = new Set(["Refresco", "Jugo", "Agua", "Imperial"]);
+
   db.ref('pedidos/' + clienteActual).once('value').then(snapshot => {
     let productosPrevios = [];
     if (snapshot.exists()) {
@@ -179,22 +182,22 @@ function confirmarPedido() {
     const productosCombinados = [...productosPrevios];
 
     pedido.filter(item => item.editable).forEach(item => {
-      const nombre = item.producto.split(" - $")[0];
-      const precio = parseFloat(item.producto.split(" - $")[1]);
+      const nombre = item.producto.split(" - ₡")[0];
+      const precio = parseFloat(item.producto.split(" - ₡")[1]);
 
-      // Buscar producto no preparado existente con el mismo nombre
-      const productoNoPreparado = productosCombinados.find(p => p.nombre === nombre && !p.preparado);
+      const esNoPreparar = productosNoPreparar.has(nombre);
 
-      if (productoNoPreparado) {
-        // Si existe producto no preparado, sumamos la cantidad
-        productoNoPreparado.cantidad += item.cantidad;
+      // Buscar producto existente con el mismo nombre y mismo estado preparado
+      const productoExistente = productosCombinados.find(p => p.nombre === nombre && p.preparado === esNoPreparar);
+
+      if (productoExistente) {
+        productoExistente.cantidad += item.cantidad;
       } else {
-        // Si no existe producto no preparado, agregamos uno nuevo con preparado = false
         productosCombinados.push({
           nombre,
           cantidad: item.cantidad,
           precio,
-          preparado: false
+          preparado: esNoPreparar // true si es bebida, false si no
         });
       }
     });
@@ -248,7 +251,7 @@ function actualizarProductosPorTipo() {
     productosPorTipo[tipoSeleccionado].forEach(producto => {
       const option = document.createElement("option");
       option.value = producto.precio;
-      option.textContent = `${producto.nombre} - $${producto.precio}`;
+      option.textContent = `${producto.nombre} - ₡${producto.precio}`;
       productoSelect.appendChild(option);
     });
   }
