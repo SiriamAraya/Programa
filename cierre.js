@@ -76,22 +76,56 @@ function mostrarDetalle(cierre) {
   });
 
   // Mostrar resumen debajo de la tabla
- totalModal.innerHTML = `
-  <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
-    <tr>
-      <td style="text-align:right;"><strong>Total:</strong></td>
-      <td style="text-align:right;">₡${totalGeneral.toFixed(2)}</td>
-    </tr>
-    <tr>
-      <td style="text-align:right;"><strong>Total en efectivo:</strong></td>
-      <td style="text-align:right;">₡${totalEfectivo.toFixed(2)}</td>
-    </tr>
-    <tr>
-      <td style="text-align:right;"><strong>Total con tarjeta:</strong></td>
-      <td style="text-align:right;">₡${totalTarjeta.toFixed(2)}</td>
-    </tr>
-  </table>
+totalModal.innerHTML = `
+  <div style="
+    width: 100%;
+    min-width: 225px;
+  ">
+    <table style="
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1em;
+      table-layout: fixed;
+    ">
+      <tr>
+        <td style="
+          text-align: right;
+          padding: 10px;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          white-space: normal;
+        ">
+          <strong>Total:</strong> ₡${totalGeneral.toFixed(2)}
+        </td>
+      </tr>
+      <tr>
+        <td style="
+          text-align: right;
+          padding: 10px;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          white-space: normal;
+        ">
+          <strong>Total en efectivo:</strong> ₡${totalEfectivo.toFixed(2)}
+        </td>
+      </tr>
+      <tr>
+        <td style="
+          text-align: right;
+          padding: 10px;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          white-space: normal;
+        ">
+          <strong>Total con tarjeta:</strong> ₡${totalTarjeta.toFixed(2)}
+        </td>
+      </tr>
+    </table>
+  </div>
 `;
+
+
+
 
   modalBg.style.display = "flex";
 }
