@@ -10,7 +10,6 @@ const firebaseConfig = {
   measurementId: "G-5ZG0TRNC2E"
 };
 
-// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const db = firebase.database();
@@ -19,9 +18,8 @@ const tbody = document.getElementById("listaPedidos");
 
 let pedidos = [];
 let clienteActual = null;
-let totalActual = 0;
 
-// Variables modal y campos
+// Modal
 const modal = document.getElementById("modalPago");
 const cerrarModalBtn = document.getElementById("cerrarModal");
 const totalPagoInput = document.getElementById("totalPago");
@@ -30,7 +28,7 @@ const tipoPagoSelect = document.getElementById("tipoPago");
 const resultadoPagoDiv = document.getElementById("resultadoPago");
 const btnProcesarPago = document.getElementById("btnProcesarPago");
 
-// Escuchar cambios en tiempo real en la rama 'pedidos'
+// Escucha cambios en pedidos
 db.ref('pedidos').on('value', (snapshot) => {
   pedidos = [];
   snapshot.forEach(childSnapshot => {
@@ -42,7 +40,7 @@ db.ref('pedidos').on('value', (snapshot) => {
 });
 
 function agruparYMostrarPedidos() {
-  tbody.innerHTML = ""; // Limpiar la tabla
+  tbody.innerHTML = "";
 
   const pedidosPorCliente = pedidos.reduce((acc, item) => {
     if (!acc[item.cliente]) acc[item.cliente] = [];
@@ -60,11 +58,21 @@ function agruparYMostrarPedidos() {
     let productosHTML = "<ul>";
     let total = 0;
 
-    items.forEach(i => {
-      i.productos.forEach(prod => {
-        const subtotal = prod.cantidad * prod.precio;
-        productosHTML += `<li>${prod.cantidad} x ${prod.nombre} = ₡${subtotal.toFixed(2)}</li>`;
+    items.forEach((pedido, pedidoIdx) => {
+      pedido.productos.forEach((prod, i) => {
+        const subtotal = prod.precio * prod.cantidad;
         total += subtotal;
+        productosHTML += `
+          <li>
+            <label>
+              <input type="checkbox" class="producto-check" 
+                data-cliente="${cliente}" 
+                data-pedido="${pedido.id}" 
+                data-precio="${prod.precio}" 
+                data-cantidad="${prod.cantidad}">
+              ${prod.cantidad} x ${prod.nombre} = ₡${subtotal.toFixed(2)}
+            </label>
+          </li>`;
       });
     });
 
@@ -72,27 +80,73 @@ function agruparYMostrarPedidos() {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${cliente}</td>
+      <td>
+        <label>
+          <input type="checkbox" class="pagar-todo-check" data-cliente="${cliente}"> ${cliente}
+        </label>
+      </td>
       <td>${productosHTML}</td>
-      <td>₡${total.toFixed(2)}</td>
-      <td><button class="btnPagar" data-cliente="${cliente}" data-total="${total}">Pagar</button></td>
+      <td id="total-${cliente}">₡0.00</td>
+      <td><button class="btnPagar" data-cliente="${cliente}">Pagar</button></td>
     `;
     tbody.appendChild(tr);
   }
+
+  // Eventos para checkboxes
+  document.querySelectorAll(".pagar-todo-check").forEach(chk => {
+    chk.addEventListener("change", () => {
+      const cliente = chk.dataset.cliente;
+      const checks = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]`);
+      checks.forEach(c => c.checked = chk.checked);
+      actualizarTotalCliente(cliente);
+    });
+  });
+
+  document.querySelectorAll(".producto-check").forEach(chk => {
+    chk.addEventListener("change", () => {
+      const cliente = chk.dataset.cliente;
+      const todos = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]`);
+      const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]:checked`);
+      const pagarTodo = document.querySelector(`.pagar-todo-check[data-cliente="${cliente}"]`);
+      if (seleccionados.length !== todos.length) {
+        pagarTodo.checked = false;
+      } else {
+        pagarTodo.checked = true;
+      }
+      actualizarTotalCliente(cliente);
+    });
+  });
 }
 
-// Manejador para botones "Pagar"
+function actualizarTotalCliente(cliente) {
+  let total = 0;
+  const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]:checked`);
+  seleccionados.forEach(chk => {
+    const precio = parseFloat(chk.dataset.precio);
+    const cantidad = parseFloat(chk.dataset.cantidad);
+    total += precio * cantidad;
+  });
+  const totalEl = document.getElementById(`total-${cliente}`);
+  if (totalEl) totalEl.textContent = `₡${total.toFixed(2)}`;
+}
+
+// Botón pagar
 tbody.addEventListener("click", (e) => {
   if (e.target.classList.contains("btnPagar")) {
-    const cliente = e.target.getAttribute("data-cliente");
-    const total = parseFloat(e.target.getAttribute("data-total"));
-    abrirModalPago(total, cliente);
+    clienteActual = e.target.getAttribute("data-cliente");
+    abrirModalPago(clienteActual);
   }
 });
 
-function abrirModalPago(total, cliente) {
-  clienteActual = cliente;
-  totalActual = total;
+function abrirModalPago(cliente) {
+  const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]:checked`);
+  let total = 0;
+  seleccionados.forEach(chk => {
+    const precio = parseFloat(chk.dataset.precio);
+    const cantidad = parseFloat(chk.dataset.cantidad);
+    total += precio * cantidad;
+  });
+
   totalPagoInput.value = total.toFixed(2);
   montoRecibidoInput.value = "";
   resultadoPagoDiv.innerHTML = "";
@@ -123,14 +177,15 @@ tipoPagoSelect.addEventListener("change", () => {
 
 btnProcesarPago.addEventListener("click", () => {
   const tipo = tipoPagoSelect.value;
+  const total = parseFloat(totalPagoInput.value);
 
   if (tipo === "Efectivo") {
     const recibido = parseFloat(montoRecibidoInput.value);
-    if (isNaN(recibido) || recibido < totalActual) {
+    if (isNaN(recibido) || recibido < total) {
       resultadoPagoDiv.innerHTML = "<p style='color:red'>Monto insuficiente para pago en efectivo.</p>";
       return;
     }
-    const vuelto = recibido - totalActual;
+    const vuelto = recibido - total;
     resultadoPagoDiv.innerHTML = `
       <p>Pago registrado con ${tipo}.</p>
       <p>Vuelto: ₡${vuelto.toFixed(2)}</p>
@@ -139,39 +194,53 @@ btnProcesarPago.addEventListener("click", () => {
     resultadoPagoDiv.innerHTML = `<p>Pago registrado con Tarjeta.</p>`;
   }
 
-  // Filtrar los pedidos pagados del cliente actual
-  const pedidosPagados = pedidos.filter(p => p.cliente === clienteActual);
+  // Obtener productos seleccionados
+  const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${clienteActual}"]:checked`);
+  const productosSeleccionadosPorPedido = {};
 
-  // Agregar el tipoPago a cada pedido antes de guardar
-  const pedidosConTipoPago = pedidosPagados.map(pedido => ({
-    ...pedido,
-    tipoPago: tipo
+  seleccionados.forEach(chk => {
+    const pedidoId = chk.dataset.pedido;
+    const pedido = pedidos.find(p => p.id === pedidoId);
+    const prod = pedido.productos.find(prod => 
+      prod.precio == chk.dataset.precio && prod.cantidad == chk.dataset.cantidad
+    );
+    if (!productosSeleccionadosPorPedido[pedidoId]) {
+      productosSeleccionadosPorPedido[pedidoId] = [];
+    }
+    productosSeleccionadosPorPedido[pedidoId].push(prod);
+  });
+
+  // Registrar ventas y eliminar productos
+  const ventas = Object.entries(productosSeleccionadosPorPedido).map(([pedidoId, productos]) => ({
+    cliente: clienteActual,
+    productos,
+    tipoPago: tipo,
+    timestamp: new Date().toISOString()
   }));
 
-  // Guardar ventas pagadas en Firebase (append)
-  let ventasDelDiaRef = db.ref('ventasDelDia');
-  ventasDelDiaRef.once('value').then(snapshot => {
-    let ventasDelDia = snapshot.val() || [];
-    ventasDelDia = ventasDelDia.concat(pedidosConTipoPago);
-    return ventasDelDiaRef.set(ventasDelDia);
+  const ventasRef = db.ref('ventasDelDia');
+  ventasRef.once('value').then(snapshot => {
+    const actuales = snapshot.val() || [];
+    return ventasRef.set(actuales.concat(ventas));
   }).then(() => {
-    // Eliminar pedidos pagados de Firebase para que no aparezcan más
-    return eliminarPedidosCliente(clienteActual);
-  }).catch(error => {
-    console.error("Error guardando la venta o eliminando pedidos:", error);
+    const updates = {};
+    for (const pedidoId in productosSeleccionadosPorPedido) {
+      const pedido = pedidos.find(p => p.id === pedidoId);
+      const nuevosProductos = pedido.productos.filter(p =>
+        !productosSeleccionadosPorPedido[pedidoId].some(sel =>
+          sel.nombre === p.nombre &&
+          sel.precio === p.precio &&
+          sel.cantidad === p.cantidad
+        )
+      );
+      updates[`/pedidos/${pedidoId}`] = nuevosProductos.length === 0 ? null : { ...pedido, productos: nuevosProductos };
+    }
+    return db.ref().update(updates);
+  }).catch(err => {
+    console.error("Error procesando pago:", err);
   });
 
   setTimeout(() => {
     modal.style.display = "none";
-  }, 10000);
+  }, 5000);
 });
-
-function eliminarPedidosCliente(cliente) {
-  const updates = {};
-  pedidos.forEach(p => {
-    if (p.cliente === cliente) {
-      updates['/pedidos/' + p.id] = null;
-    }
-  });
-  return db.ref().update(updates);
-}
