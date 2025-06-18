@@ -1,14 +1,25 @@
+/* Global */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Body */
 body {
   font-family: Arial, sans-serif;
-  background: #f4f6f8;
+  background: #1a1c1f;
   padding: 40px 20px;
   max-width: 500px;
   margin: auto;
   text-align: center;
+  color: #eaeaea;
 }
 
 h1 {
-  color: #2c3e50;
+  font-family: 'Bebas Neue', cursive;
+  color: #4ecdc4;
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
 }
 
 form {
@@ -20,23 +31,28 @@ form {
 input, button {
   padding: 12px;
   font-size: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #444;
   border-radius: 5px;
+  background-color: #232529;
+  color: #fff;
 }
 
 button {
-  background-color: #219150;
+  background-color: #4ecdc4;
   color: white;
   font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 0 10px #4ecdc4;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #219150;
+  background-color: #379e97;
+  box-shadow: 0 0 20px #4ecdc4;
 }
 
 .error {
-  color: red;
+  color: #ff6b6b;
   margin-top: 10px;
 }
 
@@ -48,14 +64,45 @@ button:hover {
 }
 
 .menu-link {
-  background-color: #219150;
+  background-color: #4ecdc4;
   color: white;
   padding: 12px;
   text-decoration: none;
   border-radius: 5px;
   font-weight: bold;
+  box-shadow: 0 0 10px #4ecdc4;
+  transition: background-color 0.3s ease;
 }
 
 .menu-link:hover {
-  background-color: #219150;
+  background-color: #379e97;
+  box-shadow: 0 0 20px #4ecdc4;
 }
+
+@media (max-width: 480px) {
+  body {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 2.8rem; /* Más grande */
+    margin-bottom: 25px;
+  }
+
+  input, button {
+    padding: 16px;
+    font-size: 1.3rem; /* Texto más grande */
+  }
+
+  .menu {
+    gap: 25px;
+    margin-top: 30px;
+  }
+
+  .menu-link {
+    padding: 16px;
+    font-size: 1.3rem; /* Texto más grande */
+  }
+}
+
