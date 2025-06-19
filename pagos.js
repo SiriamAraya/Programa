@@ -167,6 +167,9 @@ function abrirModalPago(cliente) {
   tipoPagoSelect.value = "Efectivo";
   montoRecibidoInput.disabled = false;
 
+  btnProcesarPago.textContent = "Procesar pago"; // Restaurar texto original
+  btnProcesarPago.onclick = null;               // Quitar handler extra
+
   modalBg.style.display = "flex";  // Mostrar fondo
   modal.style.display = "block";   // Mostrar modal
 }
@@ -266,6 +269,8 @@ btnProcesarPago.addEventListener("click", () => {
     console.error("Error procesando pago:", err);
   });
 
-  // Cierra modal inmediatamente tras pago (o podrías hacerlo tras mostrar mensaje un tiempo)
-  cerrarModal();
+  // Cambia botón a Cerrar para que usuario cierre manualmente
+  btnProcesarPago.textContent = "Cerrar";
+  btnProcesarPago.onclick = cerrarModal;
+
 });
