@@ -21,6 +21,7 @@ let clienteActual = null;
 
 // Modal
 const modal = document.getElementById("modalPago");
+const modalBg = document.getElementById("modalBg"); // el fondo del modal
 const cerrarModalBtn = document.getElementById("cerrarModal");
 const totalPagoInput = document.getElementById("totalPago");
 const montoRecibidoInput = document.getElementById("montoRecibido");
@@ -56,12 +57,12 @@ function agruparYMostrarPedidos() {
   for (const cliente in pedidosPorCliente) {
     const items = pedidosPorCliente[cliente];
     let productosHTML = "<ul>";
-    let total = 0;
+    let totalCompleto = 0;
 
-    items.forEach((pedido, pedidoIdx) => {
-      pedido.productos.forEach((prod, i) => {
+    items.forEach((pedido) => {
+      pedido.productos.forEach((prod) => {
         const subtotal = prod.precio * prod.cantidad;
-        total += subtotal;
+        totalCompleto += subtotal;
         productosHTML += `
           <li>
             <label>
@@ -86,8 +87,8 @@ function agruparYMostrarPedidos() {
         </label>
       </td>
       <td>${productosHTML}</td>
-      <td id="total-${cliente}">₡0.00</td>
-      <td><button class="btnPagar" data-cliente="${cliente}">Pagar</button></td>
+      <td id="total-${cliente}">₡${totalCompleto.toFixed(2)}</td>
+      <td><button class="btnPagar" data-cliente="${cliente}" disabled>Pagar</button></td>
     `;
     tbody.appendChild(tr);
   }
@@ -108,26 +109,39 @@ function agruparYMostrarPedidos() {
       const todos = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]`);
       const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]:checked`);
       const pagarTodo = document.querySelector(`.pagar-todo-check[data-cliente="${cliente}"]`);
-      if (seleccionados.length !== todos.length) {
-        pagarTodo.checked = false;
-      } else {
-        pagarTodo.checked = true;
-      }
+      pagarTodo.checked = seleccionados.length === todos.length;
       actualizarTotalCliente(cliente);
     });
   });
 }
 
 function actualizarTotalCliente(cliente) {
-  let total = 0;
+  const checksTodos = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]`);
   const seleccionados = document.querySelectorAll(`.producto-check[data-cliente="${cliente}"]:checked`);
-  seleccionados.forEach(chk => {
-    const precio = parseFloat(chk.dataset.precio);
-    const cantidad = parseFloat(chk.dataset.cantidad);
-    total += precio * cantidad;
-  });
+  let total = 0;
+
+  if (seleccionados.length === 0) {
+    // Si no hay seleccionado, mostrar total completo
+    checksTodos.forEach(chk => {
+      const precio = parseFloat(chk.dataset.precio);
+      const cantidad = parseFloat(chk.dataset.cantidad);
+      total += precio * cantidad;
+    });
+  } else {
+    // Sumar solo los seleccionados
+    seleccionados.forEach(chk => {
+      const precio = parseFloat(chk.dataset.precio);
+      const cantidad = parseFloat(chk.dataset.cantidad);
+      total += precio * cantidad;
+    });
+  }
+
   const totalEl = document.getElementById(`total-${cliente}`);
   if (totalEl) totalEl.textContent = `₡${total.toFixed(2)}`;
+
+  // Habilitar o deshabilitar botón pagar según selección
+  const btnPagar = document.querySelector(`.btnPagar[data-cliente="${cliente}"]`);
+  if (btnPagar) btnPagar.disabled = seleccionados.length === 0;
 }
 
 // Botón pagar
@@ -152,16 +166,28 @@ function abrirModalPago(cliente) {
   resultadoPagoDiv.innerHTML = "";
   tipoPagoSelect.value = "Efectivo";
   montoRecibidoInput.disabled = false;
-  document.getElementById("modalBg").style.display = "flex";
+
+  modalBg.style.display = "flex";  // Mostrar fondo
+  modal.style.display = "block";   // Mostrar modal
 }
 
-cerrarModalBtn.onclick = () => {
-  document.getElementById("modalBg").style.display = "none";
-};
+function cerrarModal() {
+  modalBg.style.display = "none";
+  modal.style.display = "none";
+
+  // Limpia inputs y mensajes para la próxima vez
+  totalPagoInput.value = "";
+  montoRecibidoInput.value = "";
+  resultadoPagoDiv.innerHTML = "";
+  tipoPagoSelect.value = "Efectivo";
+  montoRecibidoInput.disabled = false;
+}
+
+cerrarModalBtn.onclick = cerrarModal;
 
 window.onclick = (event) => {
-  if (event.target === modal) {
-    document.getElementById("modalBg").style.display = "none";
+  if (event.target === modalBg) {
+    cerrarModal();
   }
 };
 
@@ -240,7 +266,6 @@ btnProcesarPago.addEventListener("click", () => {
     console.error("Error procesando pago:", err);
   });
 
-  setTimeout(() => {
-    modal.style.display = "none";
-  }, 5000);
+  // Cierra modal inmediatamente tras pago (o podrías hacerlo tras mostrar mensaje un tiempo)
+  cerrarModal();
 });

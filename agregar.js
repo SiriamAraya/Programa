@@ -170,7 +170,80 @@ function confirmarPedido() {
   const clienteActual = pedido[0].cliente;
 
   // Lista de productos que se marcan como preparados automáticamente (bebidas)
-  const productosNoPreparar = new Set(["Refresco", "Jugo", "Agua", "Imperial"]);
+  const productosNoPreparar = new Set([
+  // bebidas - gaseosas
+  "Coca Cola",
+  "Fanta Uva",
+  "Fanta Naranja",
+
+  // bebidas - naturales
+  "Te Frio",
+  "Tropical de Melocoton",
+  "Tropical de Frutas",
+
+  // bebidas - cervezas
+  "Imperial",
+  "Bavaria",
+  "Corona",
+
+  // bebidas - preparadas
+  "Sangria",
+  "Mamaditas",
+
+  // tragos - whisky
+  "Old Parr 18",
+  "Old Parr 12",
+  "Johnnie Blue",
+  "Double Black",
+  "John Black",
+  "Chivas 18",
+  "Chivas 12",
+  "Buchanan's",
+  "Jack Daniels",
+  "Jack Miel",
+  "Jameson",
+  "Black and White",
+  "J&B",
+  "Johnnie Rojo",
+
+  // tragos - ron
+  "Flor de Caña 18",
+  "Flor de Caña 12 años",
+  "Flor de Caña 7 y 4 años",
+  "Flor de Caña Coco",
+  "Centenario 12",
+  "Centenario 7 años",
+  "Zacapa 23",
+  "Cacique",
+
+  // tragos - tequila
+  "Don Julio 70",
+  "Don Julio Añejo",
+  "Tequila Blanco",
+  "Tequila Reposado",
+  "Tequila Añejo",
+  "Jose Cuervo",
+  "Gran Malo",
+
+  // tragos - vodka
+  "Smirnoff",
+
+  // tragos - licores
+  "Tequila Rose",
+  "Malibu",
+  "Frangelico",
+  "Jagger",
+  "Fireball",
+  "Baileys",
+  "Hpnotiq",
+  "Valdespino",
+  "Anis",
+  "Campari",
+
+  // tragos - otros
+  "Aguardiente"
+]);
+
 
   db.ref('pedidos/' + clienteActual).once('value').then(snapshot => {
     let productosPrevios = [];
@@ -223,32 +296,123 @@ function confirmarPedido() {
 }
 
 // Productos disponibles
+// Productos disponibles
 const productosPorTipo = {
+  bocaClasica: [
+    { nombre: "Palitos de Queso", precio: 2500 },
+    { nombre: "Papas Fritas", precio: 2500 },
+    { nombre: "Chicharrones", precio: 2500 },
+    { nombre: "Alitas", precio: 2500 },
+    { nombre: "Alitas con Papas", precio: 3500 },
+    { nombre: "Salchipapas", precio: 3000 }
+  ],
+  bocaTipica: [
+    { nombre: "Frijoles a las Trancas", precio: 2500 },
+    { nombre: "Higado Encebollado", precio: 2500 },
+    { nombre: "Bistec Ensebollado", precio: 2500 },
+    { nombre: "Ceviche", precio: 2500 },
+    { nombre: "Chifrijo", precio: 3500 }
+  ],
+  bebidas: {
+  gaseosas: [
+    { nombre: "Coca Cola", precio: 30 },
+    { nombre: "Fanta Uva", precio: 35 },
+    { nombre: "Fanta Naranja", precio: 2 }
+  ],
+  naturales: [
+    { nombre: "Te Frio", precio: 1500 },
+    { nombre: "Tropical de Melocoton", precio: 35 },
+    { nombre: "Tropical de Frutas", precio: 2 }
+  ],
   cervezas: [
-    { nombre: "Imperial", precio: 2 },
-    { nombre: "Pilsen", precio: 2.5 },
-    { nombre: "Bavaria", precio: 3 }
+    { nombre: "Imperial", precio: 30 },
+    { nombre: "Bavaria", precio: 35 },
+    { nombre: "Corona", precio: 2 }
   ],
-  comida: [
-    { nombre: "Hamburguesa", precio: 5 },
-    { nombre: "Pizza", precio: 7 },
-    { nombre: "Papas", precio: 4 }
-  ],
-  bebidas: [
-    { nombre: "Refresco", precio: 3 },
-    { nombre: "Jugo", precio: 3.5 },
-    { nombre: "Agua", precio: 2 }
+  preparadas: [
+    { nombre: "Sangria", precio: 2500 },
+    { nombre: "Mamaditas", precio: 1000 }
   ]
+},
+  tragos: {
+    whisky: [
+      { nombre: "Old Parr 18", precio: 4500 },
+      { nombre: "Old Parr 12", precio: 2500 },
+      { nombre: "Johnnie Blue", precio: 13500 },
+      { nombre: "Double Black", precio: 3500 },
+      { nombre: "John Black", precio: 2500 },
+      { nombre: "Chivas 18", precio: 4000 },
+      { nombre: "Chivas 12", precio: 2500 },
+      { nombre: "Buchanan's", precio: 3500 },
+      { nombre: "Jack Daniels", precio: 2500 },
+      { nombre: "Jack Miel", precio: 2500 },
+      { nombre: "Jameson", precio: 1800 },
+      { nombre: "Black and White", precio: 2000 },
+      { nombre: "J&B", precio: 2000 },
+      { nombre: "Johnnie Rojo", precio: 1500 }
+    ],
+    ron: [
+      { nombre: "Flor de Caña 18", precio: 3500 },
+      { nombre: "Flor de Caña 12 años", precio: 2500 },
+      { nombre: "Flor de Caña 7 y 4 años", precio: 2000 },
+      { nombre: "Flor de Caña Coco", precio: 2000 },
+      { nombre: "Centenario 12", precio: 2500 },
+      { nombre: "Centenario 7 años", precio: 2000 },
+      { nombre: "Zacapa 23", precio: 4500 },
+      { nombre: "Cacique", precio: 1500 }
+    ],
+    tequila: [
+      { nombre: "Don Julio 70", precio: 6500 },
+      { nombre: "Don Julio Añejo", precio: 4500 },
+      { nombre: "Tequila Blanco", precio: 3000 },
+      { nombre: "Tequila Reposado", precio: 2500 },
+      { nombre: "Tequila Añejo", precio: 2000 },
+      { nombre: "Jose Cuervo", precio: 1500 },
+      { nombre: "Gran Malo", precio: 2000 }
+    ],
+    vodka: [
+      { nombre: "Smirnoff", precio: 2000 }
+    ],
+    licores: [
+      { nombre: "Tequila Rose", precio: 2000 },
+      { nombre: "Malibu", precio: 2000 },
+      { nombre: "Frangelico", precio: 2000 },
+      { nombre: "Jagger", precio: 1500 },
+      { nombre: "Fireball", precio: 2000 },
+      { nombre: "Baileys", precio: 2000 },
+      { nombre: "Hpnotiq", precio: 2500 },
+      { nombre: "Valdespino", precio: 2000 },
+      { nombre: "Anis", precio: 1500 },
+      { nombre: "Campari", precio: 1500 }
+    ],
+    otros: [
+      { nombre: "Aguardiente", precio: 1500 }
+    ]
+  }
 };
 
 function actualizarProductosPorTipo() {
-  const tipoSeleccionado = document.getElementById("tipo").value;
+  const tipo = document.getElementById("tipo").value;
+  const subtipoSelect = document.getElementById("subtipo");
+  const filaSubtipo = document.getElementById("fila-subtipo");
   const productoSelect = document.getElementById("producto");
 
   productoSelect.innerHTML = "";
+  subtipoSelect.innerHTML = "";
+  filaSubtipo.style.display = "none";
 
-  if (productosPorTipo[tipoSeleccionado]) {
-    productosPorTipo[tipoSeleccionado].forEach(producto => {
+  if (tipo === "tragos" || tipo === "bebidas") {
+    filaSubtipo.style.display = "flex";
+    const subtipos = Object.keys(productosPorTipo[tipo]);
+    subtipos.forEach(subtipo => {
+      const option = document.createElement("option");
+      option.value = subtipo;
+      option.textContent = subtipo.charAt(0).toUpperCase() + subtipo.slice(1);
+      subtipoSelect.appendChild(option);
+    });
+    actualizarProductosPorSubtipo();
+  } else if (productosPorTipo[tipo]) {
+    productosPorTipo[tipo].forEach(producto => {
       const option = document.createElement("option");
       option.value = producto.precio;
       option.textContent = `${producto.nombre} - ₡${producto.precio}`;
@@ -256,6 +420,23 @@ function actualizarProductosPorTipo() {
     });
   }
 }
+
+function actualizarProductosPorSubtipo() {
+  const tipo = document.getElementById("tipo").value;
+  const subtipo = document.getElementById("subtipo").value;
+  const productoSelect = document.getElementById("producto");
+  productoSelect.innerHTML = "";
+
+  if (productosPorTipo[tipo] && productosPorTipo[tipo][subtipo]) {
+    productosPorTipo[tipo][subtipo].forEach(producto => {
+      const option = document.createElement("option");
+      option.value = producto.precio;
+      option.textContent = `${producto.nombre} - ₡${producto.precio}`;
+      productoSelect.appendChild(option);
+    });
+  }
+}
+
 
 cargarPedidosPorPreparar();
 actualizarProductosPorTipo();

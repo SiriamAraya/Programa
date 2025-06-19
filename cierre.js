@@ -33,7 +33,7 @@ let listenerActived = false;
 // Al iniciar, mostrar mensaje para que el usuario seleccione fecha
 listaCierres.innerHTML = "<p>Seleccione una fecha para ver cierres.</p>";
 
-// Mostrar modal con detalle, con tipo de pago incluido (modificar fecha igual)
+// Mostrar modal con detalle, agrupado por cliente y tipo de pago
 function mostrarDetalle(cierre) {
   const fechaFormateada = new Date(cierre.fecha + "T00:00:00").toLocaleDateString('es-CR', {
     weekday: 'long',
@@ -49,87 +49,64 @@ function mostrarDetalle(cierre) {
   let totalEfectivo = 0;
   let totalTarjeta = 0;
 
+  // Objeto para acumular subtotales por cliente y tipoPago
+  const totalesPorClientePago = {};
+
   cierre.ventas.forEach(venta => {
     const tipo = (venta.tipoPago || 'Desconocido').toLowerCase();
 
+    let subtotalVenta = 0;
     venta.productos.forEach(producto => {
       const subtotal = producto.cantidad * producto.precio;
+      subtotalVenta += subtotal;
       totalGeneral += subtotal;
-
-      if (tipo.includes("efectivo")) {
-        totalEfectivo += subtotal;
-      } else if (tipo.includes("tarjeta")) {
-        totalTarjeta += subtotal;
-      }
-
-      const fila = document.createElement("tr");
-      fila.innerHTML = `
-        <td>${venta.cliente}</td>
-        <td>${producto.nombre}</td>
-        <td>${producto.cantidad}</td>
-        <td>₡${producto.precio.toFixed(2)}</td>
-        <td>₡${subtotal.toFixed(2)}</td>
-        <td>${venta.tipoPago || 'N/A'}</td>
-      `;
-      detalleTabla.appendChild(fila);
     });
+
+    if (tipo.includes("efectivo")) {
+      totalEfectivo += subtotalVenta;
+    } else if (tipo.includes("tarjeta")) {
+      totalTarjeta += subtotalVenta;
+    }
+
+    const key = `${venta.cliente}|${venta.tipoPago || 'N/A'}`;
+    if (!totalesPorClientePago[key]) {
+      totalesPorClientePago[key] = {
+        cliente: venta.cliente,
+        tipoPago: venta.tipoPago || 'N/A',
+        subtotal: 0
+      };
+    }
+    totalesPorClientePago[key].subtotal += subtotalVenta;
   });
 
-  // Mostrar resumen debajo de la tabla
-totalModal.innerHTML = `
-  <div style="
-    width: 100%;
-    min-width: 225px;
-  ">
-    <table style="
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 1em;
-      table-layout: fixed;
-    ">
-      <tr>
-        <td style="
-          text-align: right;
-          padding: 10px;
-          word-break: break-word;
-          overflow-wrap: break-word;
-          white-space: normal;
-        ">
-          <strong>Total:</strong> ₡${totalGeneral.toFixed(2)}
-        </td>
-      </tr>
-      <tr>
-        <td style="
-          text-align: right;
-          padding: 10px;
-          word-break: break-word;
-          overflow-wrap: break-word;
-          white-space: normal;
-        ">
-          <strong>Total en efectivo:</strong> ₡${totalEfectivo.toFixed(2)}
-        </td>
-      </tr>
-      <tr>
-        <td style="
-          text-align: right;
-          padding: 10px;
-          word-break: break-word;
-          overflow-wrap: break-word;
-          white-space: normal;
-        ">
-          <strong>Total con tarjeta:</strong> ₡${totalTarjeta.toFixed(2)}
-        </td>
-      </tr>
-    </table>
-  </div>
-`;
+  Object.values(totalesPorClientePago).forEach(({ cliente, tipoPago, subtotal }) => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td style="padding: 6px 8px;">${cliente}</td>
+      <td style="text-align: right; padding: 6px 8px;">₡${subtotal.toFixed(2)}</td>
+      <td style="padding: 8px 10px; text-align: center; min-width: 120px;">${tipoPago}</td>
+    `;
+    detalleTabla.appendChild(fila);
+  });
 
-
-
+  totalModal.innerHTML = `
+    <div style="width: 100%; min-width: 225px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 1em;">
+        <tr>
+          <td style="text-align: right; padding: 10px;"><strong>Total:</strong> ₡${totalGeneral.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right; padding: 10px;"><strong>Total en efectivo:</strong> ₡${totalEfectivo.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right; padding: 10px;"><strong>Total con tarjeta:</strong> ₡${totalTarjeta.toFixed(2)}</td>
+        </tr>
+      </table>
+    </div>
+  `;
 
   modalBg.style.display = "flex";
 }
-
 
 // Ocultar modal
 cerrarModalBtn.addEventListener("click", () => modalBg.style.display = "none");
@@ -168,7 +145,6 @@ function cargarCierres() {
 }
 
 // Filtrar cierres por fecha al cambiar fechaBuscar
-// Filtrar cierres por fecha al cambiar fechaBuscar
 fechaBuscar.addEventListener("change", function () {
   const fecha = this.value; // fecha en formato "YYYY-MM-DD"
   if (!fecha) {
@@ -185,7 +161,6 @@ fechaBuscar.addEventListener("change", function () {
       return;
     }
 
-    // Filtrar por comparación directa de strings, ya que fecha se guarda como "YYYY-MM-DD"
     const filtrados = Object.values(cierres).filter(c => c.fecha === fecha);
 
     if (filtrados.length === 0) {
@@ -197,7 +172,6 @@ fechaBuscar.addEventListener("change", function () {
       const div = document.createElement("div");
       div.classList.add("cierre-item");
 
-      // Mostrar fecha legible sin zona horaria, solo fecha
       const fechaFormateada = new Date(cierre.fecha + "T00:00:00").toLocaleDateString('es-CR', {
         weekday: 'long',
         year: 'numeric',
